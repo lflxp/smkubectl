@@ -6,31 +6,12 @@ _demo() {
   _arguments -C \
     '1:cmd:->cmds' \
     '2:generators:->generator_lists' \
-    '-m[music file]:filename:->files' \
     '*:: :->args' \
   && ret=0
 
   case "$state" in
-    (files)
-        local -a music_files
-        music_files=( ~/.music/**/*.{mp3,wav,flac,ogg} )
-        _multi_parts / music_files
-      ;;
     (cmds)
       local commands; commands=(
-        "console:Boots up the Padrino application irb console (alternatively use 'c')"
-        "generate:Executes the Padrino generator with given options (alternatively use 'gen' or 'g')"
-        "help:Describe available commands or one specific command (alternatively use 'h')"
-        "rake:Execute rake tasks"
-        "runner:Run a piece of code in the Padrino application environment (alternatively use 'run' or 'r')"
-        "start:Starts the Padrino application (alternatively use 's')"
-        "stop:Stops the Padrino application (alternatively use 'st')"
-        "version: Show current Padrino version."
-        "create:Create a resource from a file or from stdin"
-        "expose:Take a replication controller, service, deployment or pod and expose it as a new Kubernetes service"
-        "run:Run a particular image on the cluster"
-        "set:Set specific features on objects"
-
         "explain:Get documentation for a resource"
         "get:Display one or many resources"
         "edit:Edit a resource on the server"
@@ -77,16 +58,6 @@ _demo() {
       )
 
       _describe -t commands 'command' commands && ret=0
-
-      case $line[1] in
-        (get)
-          local get; gets=(
-            "pod: pod"
-            "svc: svc"
-            "deploy: deploy"
-          )
-        ;;
-      esac
     ;;
     (generator_lists)
       case $line[1] in
@@ -104,6 +75,14 @@ _demo() {
             "task:generates a new task file"
           )
           _describe -t generates 'generate' generates && ret=0
+        ;;
+        (get)
+          local get; gets=(
+            "pod: pod"
+            "svc: svc"
+            "deploy: deploy"
+          )
+          _describe -t gets 'get' gets && ret=0
         ;;
         (start)
           local start; starts=(
@@ -249,8 +228,41 @@ _demo() {
           _describe -t projects 'project' projects && ret=0
         ;;
       esac
+
+      case $line[3] in
+        (-n)
+          local matches lbuf
+          setopt localoptions
+          # matches=("${(@f)$(kubectl get ns | sed 1d | awk '{print $1}' | FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-50%} --min-height 15 --reverse $FZF_DEFAULT_OPTS --preview 'echo {}' --preview-window down:3:wrap $FZF_COMPLETION_OPTS" fzf -m|awk '{print $1}'|tr '\n' ' ')}")
+          #matches=$(command ps -ef| sed 1d | FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-50%} --min-height 15 --reverse $FZF_DEFAULT_OPTS --preview 'echo {}' --preview-window down:3:wrap $FZF_COMPLETION_OPTS" fzf -m|awk '{print $2}'|tr '\n' ' ')
+          matches=$(command demo ${LBUFFER} | FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-50%} --min-height 15 --reverse $FZF_DEFAULT_OPTS --preview 'echo {}' --preview-window down:3:wrap $FZF_COMPLETION_OPTS" fzf -m|awk '{print $1}'|tr '\n' ' ')
+          #matches=$(command demo ${LBUFFER} | awk '{print $2}'|tr '\n' ' ')
+          #_describe 'command' ns
+          if [ -n "$matches" ]; then
+            LBUFFER="${LBUFFER}$matches"
+          fi
+          zle reset-prompt
+        ;;
+      esac 
     ;;
   esac
 
   return 1
 }
+
+_gmt() {
+  local matches lbuf
+  setopt localoptions
+  # matches=("${(@f)$(kubectl get ns | sed 1d | awk '{print $1}' | FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-50%} --min-height 15 --reverse $FZF_DEFAULT_OPTS --preview 'echo {}' --preview-window down:3:wrap $FZF_COMPLETION_OPTS" fzf -m|awk '{print $1}'|tr '\n' ' ')}")
+  #matches=$(command ps -ef| sed 1d | FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-50%} --min-height 15 --reverse $FZF_DEFAULT_OPTS --preview 'echo {}' --preview-window down:3:wrap $FZF_COMPLETION_OPTS" fzf -m|awk '{print $2}'|tr '\n' ' ')
+  matches=$(command demo ${LBUFFER} | FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-50%} --min-height 15 --reverse $FZF_DEFAULT_OPTS --preview 'echo {}' --preview-window down:3:wrap $FZF_COMPLETION_OPTS" fzf -m|awk '{print $1}'|tr '\n' ' ')
+  #matches=$(command demo ${LBUFFER} | awk '{print $2}'|tr '\n' ' ')
+  #_describe 'command' ns
+  if [ -n "$matches" ]; then
+    LBUFFER="${LBUFFER}$matches"
+  fi
+  zle reset-prompt
+}
+
+zle -N _gmt
+bindkey '^I' _gmt

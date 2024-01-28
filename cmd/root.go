@@ -19,7 +19,7 @@ func parseCmd(in string) {
 	tmp := strings.Split(strings.TrimSpace(in), " ")
 	// fmt.Printf("in %s %v %d\n", in, tmp, len(tmp))
 	switch tmp[0] {
-	case "kubectl":
+	case "kubectl", "demo":
 		if len(tmp) == 1 {
 			// os.Stdout.Write([]byte("get describe edit set"))
 			for _, x := range strings.Split("get describe edit set", " ") {
