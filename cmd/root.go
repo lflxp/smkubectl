@@ -121,6 +121,7 @@ func ContainsString(slice []string, s string) bool {
 // 解析命令
 // 只负责执行 不负责命令补全
 func parseCmd(in string) {
+	var err error
 	tmp := strings.Split(in, " ")
 	result := []string{}
 	// 记录命令最后一个字符是否是空格
@@ -173,7 +174,7 @@ func parseCmd(in string) {
 				// fmt.Println("one")
 				execCmd(value.Shell)
 			} else {
-				// fmt.Println("two")
+				// fmt.Println("two", in, result)
 				fmt.Println(strings.Join(value.Cmd, "\n"))
 				fmt.Println(strings.Join(value.Args, "\n"))
 			}
@@ -208,33 +209,40 @@ func parseCmd(in string) {
 				} else if len(result) == 3 && !isLastWorkSpace {
 					// 补全命令
 					t_two := []string{}
-					if value.Daughter["get"].IsShell {
-						// fmt.Println("9", t_two)
-						rs_string, err := execCmdString(value.Daughter["get"].Shell)
+					if value_3, ok := value.Daughter["get"]; ok {
+						t_two, err = execCompletion(t_two, result, "", &value_3, 1)
 						if err != nil {
-							// fmt.Println("9,1 ", err.Error())
 							fmt.Println(err.Error())
 							return
 						}
-						// fmt.Println("9.2", t_two)
-						// 补全 -n中提供的数据后缀
-						for _, v := range strings.Split(rs_string, "\n") {
-							if strings.HasPrefix(v, result[len(result)-1]) {
-								t_two = append(t_two, strings.Replace(v, result[len(result)-1], "", 1))
-							}
-						}
-						// fmt.Println("9.3", t_two)
-					} else {
-						// fmt.Println("10")
-						for _, k := range value.Daughter["get"].Cmd {
-							if strings.HasPrefix(k, strings.TrimSpace(result[len(result)-1])) {
-								t_rs := strings.Replace(k, strings.TrimSpace(result[len(result)-1]), "", 1)
-								if t_rs != "" && t_rs != " " {
-									t_two = append(t_two, t_rs)
-								}
-							}
-						}
 					}
+					// if value.Daughter["get"].IsShell {
+					// 	// fmt.Println("9", t_two)
+					// 	rs_string, err := execCmdString(value.Daughter["get"].Shell)
+					// 	if err != nil {
+					// 		// fmt.Println("9,1 ", err.Error())
+					// 		fmt.Println(err.Error())
+					// 		return
+					// 	}
+					// 	// fmt.Println("9.2", t_two)
+					// 	// 补全 -n中提供的数据后缀
+					// 	for _, v := range strings.Split(rs_string, "\n") {
+					// 		if strings.HasPrefix(v, result[len(result)-1]) {
+					// 			t_two = append(t_two, strings.Replace(v, result[len(result)-1], "", 1))
+					// 		}
+					// 	}
+					// 	// fmt.Println("9.3", t_two)
+					// } else {
+					// 	// fmt.Println("10")
+					// 	for _, k := range value.Daughter["get"].Cmd {
+					// 		if strings.HasPrefix(k, strings.TrimSpace(result[len(result)-1])) {
+					// 			t_rs := strings.Replace(k, strings.TrimSpace(result[len(result)-1]), "", 1)
+					// 			if t_rs != "" && t_rs != " " {
+					// 				t_two = append(t_two, t_rs)
+					// 			}
+					// 		}
+					// 	}
+					// }
 					fmt.Printf(strings.Join(t_two, "\n"))
 				} else {
 					// fmt.Println("8")
@@ -260,30 +268,37 @@ func parseCmd(in string) {
 						// 补全数据 有空格
 						// 如果获取最后一个参数无数据 则执行该命令
 
-						rs_string, err := execCmdString(fmt.Sprintf("kubectl get %s -A", result[len(result)-1]))
+						cmd := fmt.Sprintf("kubectl get %s -A", result[len(result)-1])
+						t_two, err = execCompletion(t_two, result, cmd, nil, 1)
 						if err != nil {
-							// fmt.Println("9,1 ", err.Error())
-							// 执行命令错误时执行整个命令
-							if strings.Contains(err.Error(), "exit") {
-								// fmt.Println("12 ", in, result)
-								if !strings.Contains(in, "edit") && result[1] != "edit" {
-									execCmd(in)
-								} else {
-									execCmd(strings.Replace(in, "edit", "get", 1))
-								}
-							} else {
-								fmt.Println(err.Error())
-							}
+							fmt.Println(err.Error())
 							return
-						} else {
-							// fmt.Println("9.2", t_two)
-							// 补全 -n中提供的数据后缀
-							for _, v := range strings.Split(rs_string, "\n") {
-								if strings.TrimSpace(v) != "" {
-									t_two = append(t_two, v)
-								}
-							}
 						}
+
+						// rs_string, err := execCmdString(fmt.Sprintf("kubectl get %s -A", result[len(result)-1]))
+						// if err != nil {
+						// 	// fmt.Println("9,1 ", err.Error())
+						// 	// 执行命令错误时执行整个命令
+						// 	if strings.Contains(err.Error(), "exit") {
+						// 		// fmt.Println("12 ", in, result)
+						// 		if !strings.Contains(in, "edit") && result[1] != "edit" {
+						// 			execCmd(in)
+						// 		} else {
+						// 			execCmd(strings.Replace(in, "edit", "get", 1))
+						// 		}
+						// 	} else {
+						// 		fmt.Println(err.Error())
+						// 	}
+						// 	return
+						// } else {
+						// 	// fmt.Println("9.2", t_two)
+						// 	// 补全 -n中提供的数据后缀
+						// 	for _, v := range strings.Split(rs_string, "\n") {
+						// 		if strings.TrimSpace(v) != "" {
+						// 			t_two = append(t_two, v)
+						// 		}
+						// 	}
+						// }
 
 					} else if len(t_two) == 0 && !isLastWorkSpace {
 						// 补全命令
@@ -295,91 +310,112 @@ func parseCmd(in string) {
 						// }
 
 						// 补全命令
-						if value.Daughter["get"].IsShell {
-							// fmt.Println("13")
-							// fmt.Println("9", t_two)
-							rs_string, err := execCmdString(value.Daughter["get"].Shell)
+						if target, ok := value.Daughter["get"]; ok {
+							t_two, err = execCompletion(t_two, result, "", &target, 1)
 							if err != nil {
-								// fmt.Println("9,1 ", err.Error())
 								fmt.Println(err.Error())
 								return
 							}
-							// fmt.Println("9.2", t_two)
-							// 补全 -n中提供的数据后缀
-							for _, v := range strings.Split(rs_string, "\n") {
-								if strings.HasPrefix(v, result[len(result)-1]) {
-									t_two = append(t_two, strings.Replace(v, result[len(result)-1], "", 1))
-								}
-							}
-							// fmt.Println("9.3", t_two)
 						} else {
-							// fmt.Println("14")
-							// fmt.Println("10")
-							for _, k := range value.Daughter["get"].Cmd {
-								if strings.HasPrefix(k, strings.TrimSpace(result[len(result)-1])) {
-									t_rs := strings.Replace(k, strings.TrimSpace(result[len(result)-1]), "", 1)
-									if t_rs != "" && t_rs != " " {
-										t_two = append(t_two, t_rs)
-									}
-								}
-							}
+							fmt.Printf("key get not exist\n")
+							return
 						}
+
+						// if value.Daughter["get"].IsShell {
+						// 	// fmt.Println("13")
+						// 	// fmt.Println("9", t_two)
+						// 	rs_string, err := execCmdString(value.Daughter["get"].Shell)
+						// 	if err != nil {
+						// 		// fmt.Println("9,1 ", err.Error())
+						// 		fmt.Println(err.Error())
+						// 		return
+						// 	}
+						// 	// fmt.Println("9.2", t_two)
+						// 	// 补全 -n中提供的数据后缀
+						// 	for _, v := range strings.Split(rs_string, "\n") {
+						// 		if strings.HasPrefix(v, result[len(result)-1]) {
+						// 			t_two = append(t_two, strings.Replace(v, result[len(result)-1], "", 1))
+						// 		}
+						// 	}
+						// 	// fmt.Println("9.3", t_two)
+						// } else {
+						// 	// fmt.Println("14")
+						// 	// fmt.Println("10")
+						// 	for _, k := range value.Daughter["get"].Cmd {
+						// 		if strings.HasPrefix(k, strings.TrimSpace(result[len(result)-1])) {
+						// 			t_rs := strings.Replace(k, strings.TrimSpace(result[len(result)-1]), "", 1)
+						// 			if t_rs != "" && t_rs != " " {
+						// 				t_two = append(t_two, t_rs)
+						// 			}
+						// 		}
+						// 	}
+						// }
 
 						// 补全可能缺失的数据
 						if value_maybe, ok := value.Daughter[result[len(result)-2]]; ok {
-							if value_maybe.IsShell {
-								// 补全实时数据结果
-								// execCmd(value_maybe.Shell)
-								rs_string, err := execCmdString(value_maybe.Shell)
-								if err != nil {
-									// fmt.Println("9,1 ", err.Error())
-									fmt.Println(err.Error())
-									return
-								}
-								// fmt.Println("9.2", t_two)
-								// 补全 -n中提供的数据后缀
-								for _, v := range strings.Split(rs_string, "\n") {
-									if strings.HasPrefix(v, result[len(result)-1]) {
-										t_two = append(t_two, strings.Replace(v, result[len(result)-1], "", 1))
-									}
-								}
-							} else {
-								// fmt.Println("10")
-								for _, k := range value_maybe.Cmd {
-									if strings.HasPrefix(k, strings.TrimSpace(result[len(result)-1])) {
-										t_rs := strings.Replace(k, strings.TrimSpace(result[len(result)-1]), "", 1)
-										t_two = append(t_two, t_rs)
-									}
-								}
+							t_two, err = execCompletion(t_two, result, "", &value_maybe, 1)
+							if err != nil {
+								fmt.Println(err.Error())
+								return
 							}
+							// if value_maybe.IsShell {
+							// 	// 补全实时数据结果
+							// 	// execCmd(value_maybe.Shell)
+							// 	rs_string, err := execCmdString(value_maybe.Shell)
+							// 	if err != nil {
+							// 		// fmt.Println("9,1 ", err.Error())
+							// 		fmt.Println(err.Error())
+							// 		return
+							// 	}
+							// 	// fmt.Println("9.2", t_two)
+							// 	// 补全 -n中提供的数据后缀
+							// 	for _, v := range strings.Split(rs_string, "\n") {
+							// 		if strings.HasPrefix(v, result[len(result)-1]) {
+							// 			t_two = append(t_two, strings.Replace(v, result[len(result)-1], "", 1))
+							// 		}
+							// 	}
+							// } else {
+							// 	// fmt.Println("10")
+							// 	for _, k := range value_maybe.Cmd {
+							// 		if strings.HasPrefix(k, strings.TrimSpace(result[len(result)-1])) {
+							// 			t_rs := strings.Replace(k, strings.TrimSpace(result[len(result)-1]), "", 1)
+							// 			t_two = append(t_two, t_rs)
+							// 		}
+							// 	}
+							// }
 						}
 						// fmt.Println("15")
 						// 补全命令无效 获取上级命令的结果 并补全数据prefix数据
 						if len(t_two) == 0 {
 							if value_daughter2, ok := value.Daughter[result[len(result)-2]]; ok {
-								if value_daughter2.IsShell {
-									// 补全实时数据结果
-									// fmt.Printf("13 %s\n", value_daughter2.Shell)
-									rs_string, err := execCmdString(value_daughter2.Shell)
-									if err != nil {
-										fmt.Println(err.Error())
-										return
-									}
-									// 补全 -n中提供的数据后缀
-									for _, v := range strings.Split(rs_string, "\n") {
-										if strings.HasPrefix(v, result[len(result)-1]) {
-											t_two = append(t_two, strings.Replace(v, result[len(result)-1], "", 1))
-										}
-									}
-								} else {
-									// 补全cmd命令后缀
-									// fmt.Printf("14 %s\n", value_daughter2.Shell)
-									for _, v := range value_daughter2.Cmd {
-										if strings.HasPrefix(v, result[len(result)-2]) {
-											t_two = append(t_two, strings.Replace(v, result[len(result)-2], "", 1))
-										}
-									}
+								t_two, err = execCompletion(t_two, result, "", &value_daughter2, 2)
+								if err != nil {
+									fmt.Println(err.Error())
+									return
 								}
+								// if value_daughter2.IsShell {
+								// 	// 补全实时数据结果
+								// 	// fmt.Printf("13 %s\n", value_daughter2.Shell)
+								// 	rs_string, err := execCmdString(value_daughter2.Shell)
+								// 	if err != nil {
+								// 		fmt.Println(err.Error())
+								// 		return
+								// 	}
+								// 	// 补全 -n中提供的数据后缀
+								// 	for _, v := range strings.Split(rs_string, "\n") {
+								// 		if strings.HasPrefix(v, result[len(result)-1]) {
+								// 			t_two = append(t_two, strings.Replace(v, result[len(result)-1], "", 1))
+								// 		}
+								// 	}
+								// } else {
+								// 	// 补全cmd命令后缀
+								// 	// fmt.Printf("14 %s\n", value_daughter2.Shell)
+								// 	for _, v := range value_daughter2.Cmd {
+								// 		if strings.HasPrefix(v, result[len(result)-2]) {
+								// 			t_two = append(t_two, strings.Replace(v, result[len(result)-2], "", 1))
+								// 		}
+								// 	}
+								// }
 							}
 						}
 					} else {
@@ -394,6 +430,71 @@ func parseCmd(in string) {
 		fmt.Println("7")
 		execCmd(in)
 	}
+}
+
+// 执行Completion
+func execCompletion(result, in []string, cmd string, daughter *Completion, target int) ([]string, error) {
+	if daughter != nil && cmd == "" {
+		if daughter.IsShell {
+			// 实时补全数据结果
+			rs_string, err := execCmdString(daughter.Shell)
+			if err != nil {
+				return result, err
+			}
+			// 补全 -n中提供的数据后缀
+			for _, v := range strings.Split(rs_string, "\n") {
+				if strings.HasPrefix(v, in[len(in)-1]) {
+					result = append(result, strings.Replace(v, in[len(in)-1], "", 1))
+				}
+			}
+		} else {
+			// 补全cmd命令后缀
+			for _, k := range daughter.Cmd {
+				if strings.HasPrefix(k, strings.TrimSpace(in[len(in)-target])) {
+					t_rs := strings.Replace(k, strings.TrimSpace(in[len(in)-target]), "", 1)
+					if t_rs != "" && t_rs != " " {
+						result = append(result, t_rs)
+					}
+				}
+			}
+			for _, k := range daughter.Args {
+				if strings.HasPrefix(k, strings.TrimSpace(in[len(in)-target])) {
+					t_rs := strings.Replace(k, strings.TrimSpace(in[len(in)-target]), "", 1)
+					if t_rs != "" && t_rs != " " {
+						result = append(result, t_rs)
+					}
+				}
+			}
+		}
+	} else if daughter == nil && cmd != "" {
+		rs_string, err := execCmdString(cmd)
+		if err != nil {
+			// fmt.Println("9,1 ", err.Error())
+			// 执行命令错误时执行整个命令
+			if strings.Contains(err.Error(), "exit") {
+				// fmt.Println("12 ", in, result)
+				CMD := strings.Join(in, " ")
+				if !strings.Contains(CMD, "edit") && in[target] != "edit" {
+					execCmd(CMD)
+				} else {
+					execCmd(strings.Replace(CMD, "edit", "get", 1))
+				}
+			} else {
+				return result, err
+			}
+		} else {
+			// fmt.Println("9.2", t_two)
+			// 补全 -n中提供的数据后缀
+			for _, v := range strings.Split(rs_string, "\n") {
+				if strings.TrimSpace(v) != "" {
+					result = append(result, v)
+				}
+			}
+		}
+	} else {
+		return result, fmt.Errorf("unsupport type cmd %s", cmd)
+	}
+	return result, nil
 }
 
 func execCmdString(in string) (string, error) {
@@ -440,7 +541,7 @@ func execCmd(in string) error {
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "demo",
-	Short: "A brief description of your application",
+	Short: "A brief descriptsion of your application",
 	Long: `A longer description that spans multiple lines and likely contains
 examples and usage of using your application. For example:
 
