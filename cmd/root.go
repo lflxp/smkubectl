@@ -379,7 +379,7 @@ to quickly create a Cobra application.`,
 func Execute() {
 	// 保证没有参数或者参数只有一个且为completion的时候执行cobra
 	// 其余都走parseCmd
-	if os.Args[1] == "completion" {
+	if len(os.Args) >= 2 && os.Args[1] == "completion" {
 		err := rootCmd.Execute()
 		if err != nil {
 			os.Exit(1)

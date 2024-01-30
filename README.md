@@ -21,7 +21,7 @@ smkubectl = kubectl + fzf + zsh-completion 是一个用于在 Kubernetes 环境�
 1. install
 
 ```
-go get -u github.com/lflxp/smkubectl@latest
+go install github.com/lflxp/smkubectl@latest
 ```
 
 2. zsh开启自动补全
