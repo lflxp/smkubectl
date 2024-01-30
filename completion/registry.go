@@ -18,4 +18,5 @@ var Completes map[string]Completion = map[string]Completion{
 	"kubectl": kubectl,
 	"kill":    kill,
 	"git":     git,
+	"go":      golang,
 }

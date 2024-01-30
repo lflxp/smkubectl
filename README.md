@@ -11,7 +11,7 @@ smkubectl = kubectl + fzf + zsh-completion 是一个用于在 Kubernetes 环境�
 要使用这个工具组合，你需要安装并配置 kubectl、fzf 和 zsh。以下是安装和配置的步骤：
 
 * 安装 kubectl
-* 安装 fzf
+* 无需安装 fzf [buildin]
 * 安装 zsh
 
 通过使用 kubectl + fzf + zsh-completion 工具组合，你可以提高在 Kubernetes 环境中执行命令的效率，使你的工作更轻松。
@@ -53,3 +53,15 @@ ln -s `which kubectl` /usr/local/bin/k
 * k edit po -n
 * k get po -n namespace pod -c + ~
 * k logs -f + ~
+
+# 支持的命令
+
+* [x] kubectl && k
+* [x] kill
+* [x] git
+* [x] ssh
+* [x] go
+
+# TODO
+
+* [ ] 支持日志DEBUG功能
