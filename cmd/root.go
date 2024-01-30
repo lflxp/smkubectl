@@ -8,106 +8,12 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 
+	. "github.com/lflxp/smkubectl/completion"
 	"github.com/spf13/cobra"
 )
-
-const FZF_OPTION = "FZF_DEFAULT_OPTS=\"--height ${FZF_TMUX_HEIGHT:-50%} --min-height 15 --reverse $FZF_DEFAULT_OPTS --preview 'echo {}' --preview-window down:3:wrap $FZF_COMPLETION_OPTS\" fzf -m"
-
-type Completion struct {
-	Level    string
-	Cmd      []string // command命令
-	Args     []string // 参数
-	IsShell  bool     // 是否执行kubectl获取还是直接cmd提示
-	Shell    string   // 获取提示的命令
-	Daughter map[string]Completion
-}
-
-var Completes map[string]Completion = map[string]Completion{
-	"k": Completion{
-		Level: "cmd",
-		Cmd: []string{
-			"explain",
-			"get",
-			"edit",
-			"delete",
-
-			"rollout",
-			"scale",
-			"autoscale",
-
-			"certificate",
-			"cluster-info",
-			"top",
-			"cordon",
-			"uncordon",
-			"drain",
-			"taint",
-
-			"describe",
-			"logs",
-			"attach",
-			"exec",
-			"port-forward",
-			"proxy",
-			"cp",
-			"auth:",
-			"debug",
-
-			"diff",
-			"apply",
-			"patch",
-			"replace",
-			"wait",
-			"kustomize",
-
-			"label",
-			"annotate",
-			"completion",
-
-			"api-resources",
-			"api-versions",
-			"config",
-			"plugin",
-			"version",
-		},
-		Args:    []string{},
-		IsShell: false,
-		Daughter: map[string]Completion{
-			"get": Completion{
-				Level:   "get",
-				IsShell: true,
-				Shell:   "kubectl api-resources|sed 1d",
-				Cmd: []string{"bindings", "componentstatuses", "configmaps", "endpoints", "events", "limitranges", "namespaces", "nodes", "persistentvolumeclaims", "persistentvolumes", "pods", "podtemplates", "replicationcontrollers", "resourcequotas", "secrets", "serviceaccounts", "services", "challenges", "orders", "mutatingwebhookconfigurations", "validatingwebhookconfigurations", "customresourcedefinitions", "apiservices", "controllerrevisions", "daemonsets", "deployments", "replicasets", "statefulsets", "applications", "applicationsets", "appprojects", "argocdextensions", "tokenreviews", "localsubjectaccessreviews", "selfsubjectaccessreviews", "selfsubjectrulesreviews", "subjectaccessreviews", "horizontalpodautoscalers", "cronjobs", "jobs", "certificaterequests", "certificates", "clusterissuers", "issuers", "certificatesigningrequests", "devworkspaceoperatorconfigs", "devworkspaceroutings", "leases", "bgpconfigurations", "bgppeers", "blockaffinities", "caliconodestatuses", "clusterinformations", "felixconfigurations", "globalnetworkpolicies", "globalnetworksets", "hostendpoints", "ipamblocks", "ipamconfigs", "ipamhandles", "ippools", "ipreservations", "kubecontrollersconfigurations", "networkpolicies", "networksets", "endpointslices", "events", "flowschemas", "prioritylevelconfigurations", "departments", "licenses", "products", "projects", "roletemplatebindings", "roletemplates", "users", "workzooms", "clusterpolicies", "clusterreportchangerequests", "generaterequests", "policies", "reportchangerequests", "updaterequests", "nodes", "pods", "alertmanagerconfigs", "alertmanagers", "podmonitors", "probes", "prometheuses", "prometheusrules", "servicemonitors", "thanosrulers", "ingressclasses", "ingresses", "networkpolicies", "runtimeclasses", "checlusters", "poddisruptionbudgets", "clusterrolebindings", "clusterroles", "rolebindings", "roles", "priorityclasses", "csidrivers", "csinodes", "csistoragecapacities", "storageclasses", "volumeattachments", "clusterpolicyreports", "policyreports", "devworkspaces", "devworkspacetemplates",
-					"cs", "cm", "ep", "ev", "limits", "ns", "no", "pvc", "pv", "po", "rc", "quota", "sa", "svc", "crd", "crds", "ds", "deploy", "rs", "sts", "app", "apps", "appset", "appsets", "appproj", "appprojs", "hpa", "cj", "cr", "crs", "cert", "certs", "csr", "dwoc", "dwr", "ev", "dep", "cpol", "crcr", "gr", "pol", "rcr", "ur", "amcfg", "am", "pmon", "prb", "prom", "promrule", "smon", "ruler", "ing", "netpol", "pdb", "pc", "sc", "cpolr", "polr", "dw", "dwt",
-				},
-			},
-			"edit": Completion{
-				Level:   "edit",
-				IsShell: true,
-				Cmd: []string{"bindings", "componentstatuses", "configmaps", "endpoints", "events", "limitranges", "namespaces", "nodes", "persistentvolumeclaims", "persistentvolumes", "pods", "podtemplates", "replicationcontrollers", "resourcequotas", "secrets", "serviceaccounts", "services", "challenges", "orders", "mutatingwebhookconfigurations", "validatingwebhookconfigurations", "customresourcedefinitions", "apiservices", "controllerrevisions", "daemonsets", "deployments", "replicasets", "statefulsets", "applications", "applicationsets", "appprojects", "argocdextensions", "tokenreviews", "localsubjectaccessreviews", "selfsubjectaccessreviews", "selfsubjectrulesreviews", "subjectaccessreviews", "horizontalpodautoscalers", "cronjobs", "jobs", "certificaterequests", "certificates", "clusterissuers", "issuers", "certificatesigningrequests", "devworkspaceoperatorconfigs", "devworkspaceroutings", "leases", "bgpconfigurations", "bgppeers", "blockaffinities", "caliconodestatuses", "clusterinformations", "felixconfigurations", "globalnetworkpolicies", "globalnetworksets", "hostendpoints", "ipamblocks", "ipamconfigs", "ipamhandles", "ippools", "ipreservations", "kubecontrollersconfigurations", "networkpolicies", "networksets", "endpointslices", "events", "flowschemas", "prioritylevelconfigurations", "departments", "licenses", "products", "projects", "roletemplatebindings", "roletemplates", "users", "workzooms", "clusterpolicies", "clusterreportchangerequests", "generaterequests", "policies", "reportchangerequests", "updaterequests", "nodes", "pods", "alertmanagerconfigs", "alertmanagers", "podmonitors", "probes", "prometheuses", "prometheusrules", "servicemonitors", "thanosrulers", "ingressclasses", "ingresses", "networkpolicies", "runtimeclasses", "checlusters", "poddisruptionbudgets", "clusterrolebindings", "clusterroles", "rolebindings", "roles", "priorityclasses", "csidrivers", "csinodes", "csistoragecapacities", "storageclasses", "volumeattachments", "clusterpolicyreports", "policyreports", "devworkspaces", "devworkspacetemplates",
-					"cs", "cm", "ep", "ev", "limits", "ns", "no", "pvc", "pv", "po", "rc", "quota", "sa", "svc", "crd", "crds", "ds", "deploy", "rs", "sts", "app", "apps", "appset", "appsets", "appproj", "appprojs", "hpa", "cj", "cr", "crs", "cert", "certs", "csr", "dwoc", "dwr", "ev", "dep", "cpol", "crcr", "gr", "pol", "rcr", "ur", "amcfg", "am", "pmon", "prb", "prom", "promrule", "smon", "ruler", "ing", "netpol", "pdb", "pc", "sc", "cpolr", "polr", "dw", "dwt",
-				},
-			},
-			"-n": Completion{
-				Level:   "args",
-				IsShell: true,
-				Shell:   "kubectl get ns|sed 1d",
-			},
-			"-l": Completion{
-				Level:   "show labels",
-				IsShell: true,
-				Shell:   "kubectl get po --show-labels|sed 1d|awk '{print $6}'",
-			},
-		},
-	},
-	"kill": Completion{
-		Level:   "kill",
-		IsShell: true,
-		Shell:   "ps -ef|sed 1d",
-	},
-}
 
 func ContainsString(slice []string, s string) bool {
 	for _, item := range slice {
@@ -138,40 +44,16 @@ func parseCmd(in string) {
 			}
 		}
 	}
-	// fmt.Println(result)
-	// fmt.Printf("in %s %v %d\n", in, tmp, len(tmp))
-	// switch tmp[0] {
-	// case "kubectl", "demo":
-	// 	if len(tmp) == 1 {
-	// 		// os.Stdout.Write([]byte("get describe edit set"))
-	// 		for _, x := range strings.Split("get describe edit set", " ") {
-	// 			fmt.Println(x)
-	// 		}
-	// 		return
-	// 	} else if len(tmp) > 1 {
-	// 		switch tmp[len(tmp)-1] {
-	// 		case "-n":
-	// 			for _, x := range strings.Split("default kube-system eclipse-che", " ") {
-	// 				fmt.Println(x)
-	// 			}
-	// 		case "describe", "edit", "get":
-	// 			for _, x := range strings.Split("po pod ns namespace deploy job ingress svc cm secret", " ") {
-	// 				fmt.Println(x)
-	// 			}
-	// 		}
-	// 	}
-	// 	if tmp[len(tmp)-1] == "-n" {
-	// 		execCmd("ps -ef")
-	// 	}
-	// default:
-	// 	execCmd(in)
-	// }
+
+	if len(result) == 0 {
+		return
+	}
 
 	if value, ok := Completes[result[0]]; ok {
 		// 判断一级命令
 		if len(result) == 1 {
 			if value.IsShell {
-				// fmt.Println("one")
+				// fmt.Println("one", value.Shell)
 				execCmd(value.Shell)
 			} else {
 				// fmt.Println("two", in, result)
@@ -182,25 +64,33 @@ func parseCmd(in string) {
 			// 判断一级后面的最后一个命令
 			// fmt.Println("three")
 			if value_daughter, ok := value.Daughter[result[len(result)-1]]; ok {
-				if value_daughter.IsShell {
-					// fmt.Println("four")
-					execCmd(value_daughter.Shell)
-				} else {
-					// fmt.Println("five")
-					if value_daughter.Cmd != nil {
-						fmt.Println(strings.Join(value_daughter.Cmd, "\n"))
-					}
-					if value_daughter.Args != nil {
-						fmt.Println(strings.Join(value_daughter.Args, "\n"))
-					}
+				// 仅针对第一级命令有效
+				rs := []string{}
+				rs, err := execCompletion(rs, result, "", &value_daughter, -1, false, true)
+				if err != nil {
+					fmt.Println(err.Error())
+					return
 				}
+				fmt.Printf(strings.Join(rs, "\n"))
 			} else {
 				// fmt.Println("six")
 				// 根据命令长度智能补全命令
 				if len(result) == 2 {
-					// fmt.Println("7")
 					t_one := []string{}
-					for _, k := range value.Cmd {
+					for index, k := range value.Cmd {
+						if index == 0 {
+							found, err := regexp.MatchString("(COMMAND|NAME|NAMESPACE).*", k)
+							if err != nil {
+								fmt.Println(err.Error())
+								return
+							}
+
+							if !found {
+								fmt.Println("COMMAND")
+							} else {
+								fmt.Println(k)
+							}
+						}
 						if strings.HasPrefix(k, result[1]) {
 							t_one = append(t_one, strings.Replace(k, result[1], "", 1))
 						}
@@ -210,108 +100,33 @@ func parseCmd(in string) {
 					// 补全命令
 					t_two := []string{}
 					if value_3, ok := value.Daughter["get"]; ok {
-						t_two, err = execCompletion(t_two, result, "", &value_3, 1)
+						t_two, err = execCompletion(t_two, result, "", &value_3, 1, true, false)
 						if err != nil {
 							fmt.Println(err.Error())
 							return
 						}
 					}
-					// if value.Daughter["get"].IsShell {
-					// 	// fmt.Println("9", t_two)
-					// 	rs_string, err := execCmdString(value.Daughter["get"].Shell)
-					// 	if err != nil {
-					// 		// fmt.Println("9,1 ", err.Error())
-					// 		fmt.Println(err.Error())
-					// 		return
-					// 	}
-					// 	// fmt.Println("9.2", t_two)
-					// 	// 补全 -n中提供的数据后缀
-					// 	for _, v := range strings.Split(rs_string, "\n") {
-					// 		if strings.HasPrefix(v, result[len(result)-1]) {
-					// 			t_two = append(t_two, strings.Replace(v, result[len(result)-1], "", 1))
-					// 		}
-					// 	}
-					// 	// fmt.Println("9.3", t_two)
-					// } else {
-					// 	// fmt.Println("10")
-					// 	for _, k := range value.Daughter["get"].Cmd {
-					// 		if strings.HasPrefix(k, strings.TrimSpace(result[len(result)-1])) {
-					// 			t_rs := strings.Replace(k, strings.TrimSpace(result[len(result)-1]), "", 1)
-					// 			if t_rs != "" && t_rs != " " {
-					// 				t_two = append(t_two, t_rs)
-					// 			}
-					// 		}
-					// 	}
-					// }
 					fmt.Printf(strings.Join(t_two, "\n"))
 				} else {
-					// fmt.Println("8")
 					// 补全数据
 					t_two := []string{}
 					// 优先匹配value.Daughter里面的值
-					// for _, k := range value.Daughter["get"].Cmd {
-					// 	if strings.HasPrefix(k, strings.TrimSpace(result[len(result)-1])) {
-					// 		t_rs := strings.Replace(k, strings.TrimSpace(result[len(result)-1]), "", 1)
-					// 		if t_rs != "" && t_rs != " " {
-					// 			t_two = append(t_two, t_rs)
-					// 		}
-					// 	}
-					// }
-
 					// 补全上一个命令的结果，查询并替换已有数据
 					// 没有发现命令则获取上一步的命令 获取资源后进行资源匹配
 					if len(t_two) == 0 && isLastWorkSpace {
 						// 补全实时数据结果
-						// fmt.Printf("11 kubectl get %s -A\n", result[len(result)-1])
-						// execCmd(fmt.Sprintf("kubectl get %s -A", result[len(result)-1]))
-
 						// 补全数据 有空格
 						// 如果获取最后一个参数无数据 则执行该命令
-
 						cmd := fmt.Sprintf("kubectl get %s -A", result[len(result)-1])
-						t_two, err = execCompletion(t_two, result, cmd, nil, 1)
+						t_two, err = execCompletion(t_two, result, cmd, nil, 1, true, false)
 						if err != nil {
 							fmt.Println(err.Error())
 							return
 						}
-
-						// rs_string, err := execCmdString(fmt.Sprintf("kubectl get %s -A", result[len(result)-1]))
-						// if err != nil {
-						// 	// fmt.Println("9,1 ", err.Error())
-						// 	// 执行命令错误时执行整个命令
-						// 	if strings.Contains(err.Error(), "exit") {
-						// 		// fmt.Println("12 ", in, result)
-						// 		if !strings.Contains(in, "edit") && result[1] != "edit" {
-						// 			execCmd(in)
-						// 		} else {
-						// 			execCmd(strings.Replace(in, "edit", "get", 1))
-						// 		}
-						// 	} else {
-						// 		fmt.Println(err.Error())
-						// 	}
-						// 	return
-						// } else {
-						// 	// fmt.Println("9.2", t_two)
-						// 	// 补全 -n中提供的数据后缀
-						// 	for _, v := range strings.Split(rs_string, "\n") {
-						// 		if strings.TrimSpace(v) != "" {
-						// 			t_two = append(t_two, v)
-						// 		}
-						// 	}
-						// }
-
 					} else if len(t_two) == 0 && !isLastWorkSpace {
 						// 补全命令
-						// fmt.Println("12")
-						// for _, v := range value.Daughter["get"].Cmd {
-						// 	if strings.HasPrefix(v, result[len(result)-1]) {
-						// 		t_two = append(t_two, strings.Replace(v, result[len(result)-1], "", 1))
-						// 	}
-						// }
-
-						// 补全命令
 						if target, ok := value.Daughter["get"]; ok {
-							t_two, err = execCompletion(t_two, result, "", &target, 1)
+							t_two, err = execCompletion(t_two, result, "", &target, 1, true, false)
 							if err != nil {
 								fmt.Println(err.Error())
 								return
@@ -321,101 +136,23 @@ func parseCmd(in string) {
 							return
 						}
 
-						// if value.Daughter["get"].IsShell {
-						// 	// fmt.Println("13")
-						// 	// fmt.Println("9", t_two)
-						// 	rs_string, err := execCmdString(value.Daughter["get"].Shell)
-						// 	if err != nil {
-						// 		// fmt.Println("9,1 ", err.Error())
-						// 		fmt.Println(err.Error())
-						// 		return
-						// 	}
-						// 	// fmt.Println("9.2", t_two)
-						// 	// 补全 -n中提供的数据后缀
-						// 	for _, v := range strings.Split(rs_string, "\n") {
-						// 		if strings.HasPrefix(v, result[len(result)-1]) {
-						// 			t_two = append(t_two, strings.Replace(v, result[len(result)-1], "", 1))
-						// 		}
-						// 	}
-						// 	// fmt.Println("9.3", t_two)
-						// } else {
-						// 	// fmt.Println("14")
-						// 	// fmt.Println("10")
-						// 	for _, k := range value.Daughter["get"].Cmd {
-						// 		if strings.HasPrefix(k, strings.TrimSpace(result[len(result)-1])) {
-						// 			t_rs := strings.Replace(k, strings.TrimSpace(result[len(result)-1]), "", 1)
-						// 			if t_rs != "" && t_rs != " " {
-						// 				t_two = append(t_two, t_rs)
-						// 			}
-						// 		}
-						// 	}
-						// }
-
 						// 补全可能缺失的数据
 						if value_maybe, ok := value.Daughter[result[len(result)-2]]; ok {
-							t_two, err = execCompletion(t_two, result, "", &value_maybe, 1)
+							t_two, err = execCompletion(t_two, result, "", &value_maybe, 1, true, false)
 							if err != nil {
 								fmt.Println(err.Error())
 								return
 							}
-							// if value_maybe.IsShell {
-							// 	// 补全实时数据结果
-							// 	// execCmd(value_maybe.Shell)
-							// 	rs_string, err := execCmdString(value_maybe.Shell)
-							// 	if err != nil {
-							// 		// fmt.Println("9,1 ", err.Error())
-							// 		fmt.Println(err.Error())
-							// 		return
-							// 	}
-							// 	// fmt.Println("9.2", t_two)
-							// 	// 补全 -n中提供的数据后缀
-							// 	for _, v := range strings.Split(rs_string, "\n") {
-							// 		if strings.HasPrefix(v, result[len(result)-1]) {
-							// 			t_two = append(t_two, strings.Replace(v, result[len(result)-1], "", 1))
-							// 		}
-							// 	}
-							// } else {
-							// 	// fmt.Println("10")
-							// 	for _, k := range value_maybe.Cmd {
-							// 		if strings.HasPrefix(k, strings.TrimSpace(result[len(result)-1])) {
-							// 			t_rs := strings.Replace(k, strings.TrimSpace(result[len(result)-1]), "", 1)
-							// 			t_two = append(t_two, t_rs)
-							// 		}
-							// 	}
-							// }
 						}
 						// fmt.Println("15")
 						// 补全命令无效 获取上级命令的结果 并补全数据prefix数据
 						if len(t_two) == 0 {
 							if value_daughter2, ok := value.Daughter[result[len(result)-2]]; ok {
-								t_two, err = execCompletion(t_two, result, "", &value_daughter2, 2)
+								t_two, err = execCompletion(t_two, result, "", &value_daughter2, 2, true, false)
 								if err != nil {
 									fmt.Println(err.Error())
 									return
 								}
-								// if value_daughter2.IsShell {
-								// 	// 补全实时数据结果
-								// 	// fmt.Printf("13 %s\n", value_daughter2.Shell)
-								// 	rs_string, err := execCmdString(value_daughter2.Shell)
-								// 	if err != nil {
-								// 		fmt.Println(err.Error())
-								// 		return
-								// 	}
-								// 	// 补全 -n中提供的数据后缀
-								// 	for _, v := range strings.Split(rs_string, "\n") {
-								// 		if strings.HasPrefix(v, result[len(result)-1]) {
-								// 			t_two = append(t_two, strings.Replace(v, result[len(result)-1], "", 1))
-								// 		}
-								// 	}
-								// } else {
-								// 	// 补全cmd命令后缀
-								// 	// fmt.Printf("14 %s\n", value_daughter2.Shell)
-								// 	for _, v := range value_daughter2.Cmd {
-								// 		if strings.HasPrefix(v, result[len(result)-2]) {
-								// 			t_two = append(t_two, strings.Replace(v, result[len(result)-2], "", 1))
-								// 		}
-								// 	}
-								// }
 							}
 						}
 					} else {
@@ -427,41 +164,122 @@ func parseCmd(in string) {
 			}
 		}
 	} else {
-		fmt.Println("7")
-		execCmd(in)
+		// fmt.Println("7")
+		// execCmd(in)
 	}
 }
 
-// 执行Completion
-func execCompletion(result, in []string, cmd string, daughter *Completion, target int) ([]string, error) {
-	if daughter != nil && cmd == "" {
-		if daughter.IsShell {
-			// 实时补全数据结果
-			rs_string, err := execCmdString(daughter.Shell)
-			if err != nil {
-				return result, err
+// 抽离namespace和name
+func absoftNS(in []string) (string, string, error) {
+	var namespace, name string
+	var err error
+
+	for index, value := range in {
+		if value == "-n" {
+			if len(in) > index+1 {
+				namespace = in[index+1]
+			} else {
+				err = fmt.Errorf("namespace is empty")
+				return namespace, name, err
 			}
-			// 补全 -n中提供的数据后缀
-			for _, v := range strings.Split(rs_string, "\n") {
-				if strings.HasPrefix(v, in[len(in)-1]) {
-					result = append(result, strings.Replace(v, in[len(in)-1], "", 1))
+
+			if len(in) > index+2 {
+				name = in[index+2]
+				break
+			} else {
+				err = fmt.Errorf("name is empty")
+				return namespace, name, err
+			}
+		}
+	}
+	return namespace, name, nil
+}
+
+// 执行Completion
+// cmd不为空时 ==> isLastWorkSpace == true
+// cmd为空时 ==> isLastWorkSpace == false
+// keepHeader 是否保留第一行数据
+// in 当前输入的数据
+// needRawCmd 是否需要原始命令
+func execCompletion(result, in []string, cmd string, daughter *Completion, target int, keepHeader, first bool) ([]string, error) {
+	if daughter != nil && cmd == "" {
+		if daughter.IsCondition {
+			var (
+				found bool
+				err   error
+			)
+			// 多条件过滤
+			for _, v := range daughter.Condition {
+				found, err = regexp.MatchString(v, strings.Join(in, " "))
+				if err != nil {
+					return result, err
 				}
+			}
+			if found {
+				var shell string
+				// 硬编码
+				// 专门处理pod类查询
+				switch daughter.Level {
+				case "show containers":
+					// 获取pod的namespace和name
+					ns, name, err := absoftNS(in)
+					if err != nil {
+						return result, err
+					}
+					shell = fmt.Sprintf("kubectl get pod -n %s %s -o jsonpath='{.spec.containers[*].name}'|tr ' ' '\\n'", ns, name)
+					fmt.Println("CONTAINERS")
+				default:
+					shell = daughter.Shell
+				}
+
+				execCmd(shell)
 			}
 		} else {
-			// 补全cmd命令后缀
-			for _, k := range daughter.Cmd {
-				if strings.HasPrefix(k, strings.TrimSpace(in[len(in)-target])) {
-					t_rs := strings.Replace(k, strings.TrimSpace(in[len(in)-target]), "", 1)
-					if t_rs != "" && t_rs != " " {
-						result = append(result, t_rs)
+			if daughter.IsShell {
+				// 实时补全数据结果
+				if first {
+					execCmd(daughter.Shell)
+				} else {
+					rs_string, err := execCmdString(daughter.Shell)
+					if err != nil {
+						return result, err
+					}
+					// 补全 -n中提供的数据后缀
+					for index, v := range strings.Split(rs_string, "\n") {
+						if keepHeader && index == 0 {
+							result = append(result, v)
+						} else {
+							if strings.HasPrefix(v, in[len(in)-1]) {
+								result = append(result, strings.Replace(v, in[len(in)-1], "", 1))
+							}
+						}
 					}
 				}
-			}
-			for _, k := range daughter.Args {
-				if strings.HasPrefix(k, strings.TrimSpace(in[len(in)-target])) {
-					t_rs := strings.Replace(k, strings.TrimSpace(in[len(in)-target]), "", 1)
-					if t_rs != "" && t_rs != " " {
-						result = append(result, t_rs)
+			} else {
+				// 补全cmd命令后缀
+				if first {
+					if daughter.Cmd != nil {
+						fmt.Println(strings.Join(daughter.Cmd, "\n"))
+					}
+					if daughter.Args != nil {
+						fmt.Println(strings.Join(daughter.Args, "\n"))
+					}
+				} else {
+					for _, k := range daughter.Cmd {
+						if strings.HasPrefix(k, strings.TrimSpace(in[len(in)-target])) {
+							t_rs := strings.Replace(k, strings.TrimSpace(in[len(in)-target]), "", 1)
+							if t_rs != "" && t_rs != " " {
+								result = append(result, t_rs)
+							}
+						}
+					}
+					for _, k := range daughter.Args {
+						if strings.HasPrefix(k, strings.TrimSpace(in[len(in)-target])) {
+							t_rs := strings.Replace(k, strings.TrimSpace(in[len(in)-target]), "", 1)
+							if t_rs != "" && t_rs != " " {
+								result = append(result, t_rs)
+							}
+						}
 					}
 				}
 			}
@@ -561,25 +379,7 @@ to quickly create a Cobra application.`,
 func Execute() {
 	// 保证没有参数或者参数只有一个且为completion的时候执行cobra
 	// 其余都走parseCmd
-	// if len(os.Args) == 2 {
-	// 	if os.Args[1] == "completion" {
-	// 		err := rootCmd.Execute()
-	// 		if err != nil {
-	// 			os.Exit(1)
-	// 		}
-	// 	} else {
-	// 		parseCmd(strings.Join(os.Args[1:], " "))
-	// 	}
-	// } else if len(os.Args) == 1 {
-	// 	err := rootCmd.Execute()
-	// 	if err != nil {
-	// 		os.Exit(1)
-	// 	}
-	// } else {
-	// 	parseCmd(strings.Join(os.Args[1:], " "))
-	// }
-
-	if len(os.Args) == 2 && os.Args[1] == "completion" {
+	if os.Args[1] == "completion" {
 		err := rootCmd.Execute()
 		if err != nil {
 			os.Exit(1)
