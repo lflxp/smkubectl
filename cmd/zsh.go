@@ -23,7 +23,7 @@ _k() {
   local matches namespace result
 
   # 获取一次性结果
-  result=$(command demo ${LBUFFER})
+  result=$(command smkubectl ${LBUFFER})
 
   __cobra-cli_debug "namespace ${result}"
   namespace=$(command echo ${result}|head -1|awk '/^NAMESPACE/ {print "yes"}')
@@ -52,7 +52,6 @@ var zshCmd = &cobra.Command{
 	Short: "zsh completion script",
 	Long:  `within kubectl k kill git`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("hhhhhh")
 		fmt.Println(zshCompletion)
 	},
 }

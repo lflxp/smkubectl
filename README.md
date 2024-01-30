@@ -29,7 +29,7 @@ go install github.com/lflxp/smkubectl@latest
 ```
 autoload -U compinit && compinit -u
 source <(smkubectl completion zsh)
-ln -s `which kubectl` /usr/local/bin/kubectl
+ln -s `which kubectl` /usr/local/bin/k
 ```
 
 # 使用

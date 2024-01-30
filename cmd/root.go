@@ -385,6 +385,8 @@ func Execute() {
 			if err != nil {
 				os.Exit(1)
 			}
+		} else {
+			parseCmd(strings.Join(os.Args[1:], " "))
 		}
 	} else {
 		parseCmd(strings.Join(os.Args[1:], " "))
