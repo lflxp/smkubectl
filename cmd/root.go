@@ -117,7 +117,15 @@ func parseCmd(in string) {
 						// 补全实时数据结果
 						// 补全数据 有空格
 						// 如果获取最后一个参数无数据 则执行该命令
-						cmd := fmt.Sprintf("kubectl get %s -A", result[len(result)-1])
+						var cmd string
+
+						switch result[0] {
+						case "kubectl", "k", "kk", "k8s":
+							cmd = fmt.Sprintf("kubectl get %s -A", result[len(result)-1])
+						default:
+							cmd = "ps -ef"
+						}
+
 						t_two, err = execCompletion(t_two, result, cmd, nil, 1, true, false)
 						if err != nil {
 							fmt.Println(err.Error())
