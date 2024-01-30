@@ -31,3 +31,20 @@ autoload -U compinit && compinit -u
 source <(smkubectl completion zsh)
 ln -s `which kubectl` /usr/local/bin/kubectl
 ```
+
+# 使用
+
+## 快捷键
+
+> ~
+
+## 操作
+
+* k + ~
+* k g + ~
+* k get + ~
+* k get po+~ (没有空格)
+* k get po + ~ (有空格)
+* k edit po -n 
+* k get po -n namespace pod -c + ~
+* k logs -f + ~
