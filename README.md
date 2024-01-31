@@ -62,6 +62,12 @@ ln -s `which kubectl` /usr/local/bin/k
 * k get po -n namespace pod -c + ~
 * k logs -f + ~
 
+## DEBUG模式
+
+```zsh
+source <(smkubectl completon zsh -d)
+```
+
 # 支持的命令
 
 * [x] kubectl && k

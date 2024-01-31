@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"regexp"
@@ -22,67 +23,76 @@ func ContainsString(slice []string, s string) bool {
 
 // 解析命令
 // 只负责执行 不负责命令补全
-func parseCmd(in string) {
+func ParseCmd(in string) {
 	var err error
-	tmp := strings.Split(in, " ")
-	result := []string{}
 	// 记录命令最后一个字符是否是空格
 	isLastWorkSpace := false
+	tmp := strings.Split(in, " ")
+	result := []string{}
 	// 清除空格和空字符串
+	// args参数包含回车
 	for index, v := range tmp {
 		if v != "" && v != " " {
 			result = append(result, v)
 		}
 		if index == len(tmp)-1 {
 			if v == "" || v == " " {
+				slog.Debug("命令最后包含空格或空字符")
 				isLastWorkSpace = true
 				// fmt.Printf("0 islaster %d %d works |%s| %v\n", index, len(tmp)-1, v, isLastWorkSpace)
 			}
 		}
+		slog.Debug("in value", "index", index, "value", v, "result", result, "isLastWorkSpace", isLastWorkSpace)
 	}
 
-	// fmt.Println("cmd", in)
+	slog.Debug("result", "data", result)
 	if len(result) == 0 {
+		slog.Debug("命令为空")
 		return
 	}
 
 	if value, ok := Completes[result[0]]; ok {
+		slog.Debug("命令匹配上已存在的Completes", "cmd", result[0])
 		// 判断一级命令
 		if len(result) == 1 {
 			if value.IsShell {
-				// fmt.Println("one", in, result)
+				slog.Debug(result[0], " 一级命令 执行自动Shell命令 ", value.Shell)
 				execCmd(value.Shell)
 			} else {
-				// fmt.Println("two", in, result)
+				slog.Debug(result[0], " 一级命令 打印CMD长度", len(value.Cmd), "打印ARGS长度", len(value.Args))
 				fmt.Println(strings.Join(value.Cmd, "\n"))
 				fmt.Println(strings.Join(value.Args, "\n"))
 			}
 		} else {
 			// 判断一级后面的最后一个命令
 			if value_daughter, ok := value.Daughter[result[len(result)-1]]; ok {
+				slog.Debug("仅针对第一级命令有效", "匹配命令", result[len(result)-1])
 				// 仅针对第一级命令有效
 				rs := []string{}
 				rs, err := execCompletion(rs, result, "", &value_daughter, -1, false, true)
 				if err != nil {
-					fmt.Println(err.Error())
+					slog.Error(err.Error())
 					return
 				}
 				fmt.Printf(strings.Join(rs, "\n"))
 			} else {
 				// 根据命令长度智能补全命令
 				if len(result) == 2 {
+					slog.Debug("智能补全二级命令")
 					t_one := []string{}
 					for index, k := range value.Cmd {
 						if index == 0 {
 							found, err := regexp.MatchString("(COMMAND|NAME|NAMESPACE|ARGS).*", k)
 							if err != nil {
-								fmt.Println(err.Error())
+								slog.Error("正则匹配固定标题错误", "COMMAND|NAME|NAMESPACE|ARGS", err.Error())
 								return
 							}
 
 							if !found {
+								slog.Debug("未匹配到固定标题，设置默认标题")
 								fmt.Println("COMMAND")
 							} else {
+								slog.Debug("匹配到固定标题", "TITLE", k)
 								fmt.Println(k)
 							}
 						}
@@ -93,17 +103,19 @@ func parseCmd(in string) {
 					fmt.Printf(strings.Join(t_one, "\n"))
 				} else if len(result) == 3 && !isLastWorkSpace {
 					// 补全命令
+					slog.Debug("智能补全三级命令")
 					t_two := []string{}
 					if value_3, ok := value.Daughter["get"]; ok {
 						t_two, err = execCompletion(t_two, result, "", &value_3, 1, true, false)
 						if err != nil {
-							fmt.Println(err.Error())
+							slog.Error(err.Error())
 							return
 						}
 					}
 					fmt.Printf(strings.Join(t_two, "\n"))
 				} else {
 					// 补全数据
+					slog.Debug("智能补全多级命令")
 					t_two := []string{}
 					// 优先匹配value.Daughter里面的值
 					// 补全上一个命令的结果，查询并替换已有数据
@@ -112,12 +124,15 @@ func parseCmd(in string) {
 						// 补全实时数据结果
 						// 补全数据 有空格
 						// 如果获取最后一个参数无数据 则执行该命令
+						slog.Debug("补全实时数据结果", "命令是否包含空格", isLastWorkSpace)
 						var cmd string
 
 						switch result[0] {
 						case "kubectl", "k", "kk", "k8s":
 							// 判断最后一个参数是否是命令行参数
 							isCmds := false
+							// TODO: 查询速度慢 简写无法处理
+							// 要去kubectl api-resources结果中获取
 							for _, c := range value.Cmd {
 								if strings.HasPrefix(c, result[len(result)-1]) {
 									cmd = fmt.Sprintf("kubectl get %s -A", result[len(result)-1])
@@ -139,54 +154,60 @@ func parseCmd(in string) {
 									cmd = "kubectl get pod -A"
 								}
 							}
+							slog.Debug("自动匹配一级命令默认数据源", "一级命令", "k kubectl kk k8s", "数据执行命令", cmd, "是否是api-resources资源", isCmds)
 
 						case "git":
 							cmd = `git branch -a|tr '*' ' '|awk '{for(i=1;i<=NF;++i) printf $i "\t";printf "\n"}'`
 							fmt.Println("BRANCH")
+							slog.Debug("自动匹配一级命令默认数据源", "一级命令", "git", "数据执行命令", cmd, "默认标题", "BRANCH")
 						default:
 							cmd = "ps -ef"
+							slog.Debug("自动匹配一级命令默认数据源失败", "默认数据执行命令", cmd)
 						}
 
 						t_two, err = execCompletion(t_two, result, cmd, nil, 1, true, false)
 						if err != nil {
-							fmt.Println(err.Error())
+							slog.Error(err.Error())
 							return
 						}
 					} else if len(t_two) == 0 && !isLastWorkSpace {
 						// 补全命令
+						slog.Debug("补全实时数据结果", "命令是否包含空格", isLastWorkSpace)
 						if target, ok := value.Daughter["get"]; ok {
 							t_two, err = execCompletion(t_two, result, "", &target, 1, true, false)
 							if err != nil {
-								fmt.Println(err.Error())
+								slog.Error(err.Error())
 								return
 							}
 						} else {
-							fmt.Printf("key get not exist\n")
+							slog.Error("key get not exist\n")
 							return
 						}
 
 						// 补全可能缺失的数据
+						slog.Debug("补全可能缺失的数据", "倒数第二个命令", result[len(result)-2], "target", 1)
 						if value_maybe, ok := value.Daughter[result[len(result)-2]]; ok {
 							t_two, err = execCompletion(t_two, result, "", &value_maybe, 1, true, false)
 							if err != nil {
-								fmt.Println(err.Error())
+								slog.Error(err.Error())
 								return
 							}
 						}
-						// fmt.Println("15")
 						// 补全命令无效 获取上级命令的结果 并补全数据prefix数据
+						slog.Debug("补全命令无效 获取上级命令的结果 并补全数据prefix数据", "倒数第三个命令", result[len(result)-2], "target", 2)
 						if len(t_two) == 0 {
 							if value_daughter2, ok := value.Daughter[result[len(result)-2]]; ok {
 								t_two, err = execCompletion(t_two, result, "", &value_daughter2, 2, true, false)
 								if err != nil {
-									fmt.Println(err.Error())
+									slog.Error(err.Error())
 									return
 								}
 							}
 						}
 					} else {
 						// fmt.Println("12")
-						fmt.Printf("t_two %v %b\n", t_two, isLastWorkSpace)
+						// fmt.Printf("t_two %v %b\n", t_two, isLastWorkSpace)
+						slog.Debug("补全命令失败", "结果集", t_two, "命令是否包含空格", isLastWorkSpace)
 					}
 					fmt.Printf(strings.Join(t_two, "\n"))
 				}
@@ -195,6 +216,7 @@ func parseCmd(in string) {
 	} else {
 		// fmt.Println("7")
 		// execCmd(in)
+		slog.Debug("未匹配到一级命令", "命令", result[0])
 	}
 }
 
@@ -231,8 +253,10 @@ func absoftNS(in []string) (string, string, error) {
 // in 当前输入的数据
 // needRawCmd 是否需要原始命令
 func execCompletion(result, in []string, cmd string, daughter *Completion, target int, keepHeader, first bool) ([]string, error) {
+	slog.Debug("执行自动匹配", "cmd", cmd, "target", target, "keepHeader", keepHeader, "first", first)
 	if daughter != nil && cmd == "" {
 		if daughter.IsCondition {
+			slog.Debug("执行条件判断", "IsCondition", daughter.IsCondition, "Condition", strings.Join(daughter.Condition, " "))
 			var (
 				found bool
 				err   error
@@ -257,6 +281,7 @@ func execCompletion(result, in []string, cmd string, daughter *Completion, targe
 					}
 					shell = fmt.Sprintf("kubectl get pod -n %s %s -o jsonpath='{.spec.containers[*].name}'|tr ' ' '\\n'", ns, name)
 					fmt.Println("CONTAINERS")
+					slog.Debug("kubectl -c 精确匹配", "shell", shell)
 				default:
 					shell = daughter.Shell
 				}
@@ -267,8 +292,10 @@ func execCompletion(result, in []string, cmd string, daughter *Completion, targe
 			if daughter.IsShell {
 				// 实时补全数据结果
 				if first {
+					slog.Debug("执行匹配Completes", "shell", daughter.Shell, "是否一级命令", first)
 					execCmd(daughter.Shell)
 				} else {
+					slog.Debug("执行匹配Completes, 提供命令数据后缀", "shell", daughter.Shell, "keepheader", keepHeader)
 					rs_string, err := execCmdString(daughter.Shell)
 					if err != nil {
 						return result, err
@@ -287,6 +314,7 @@ func execCompletion(result, in []string, cmd string, daughter *Completion, targe
 			} else {
 				// 补全cmd命令后缀
 				if first {
+					slog.Debug("打印一级命令列表和参数列表")
 					if daughter.Cmd != nil {
 						fmt.Println(strings.Join(daughter.Cmd, "\n"))
 					}
@@ -294,6 +322,7 @@ func execCompletion(result, in []string, cmd string, daughter *Completion, targe
 						fmt.Println(strings.Join(daughter.Args, "\n"))
 					}
 				} else {
+					slog.Debug("补全cmd命令后缀")
 					for _, k := range daughter.Cmd {
 						if strings.HasPrefix(k, strings.TrimSpace(in[len(in)-target])) {
 							t_rs := strings.Replace(k, strings.TrimSpace(in[len(in)-target]), "", 1)
@@ -314,24 +343,25 @@ func execCompletion(result, in []string, cmd string, daughter *Completion, targe
 			}
 		}
 	} else if daughter == nil && cmd != "" {
+		slog.Debug("执行默认命令数据收集命令", "cmd", cmd)
 		rs_string, err := execCmdString(cmd)
 		if err != nil {
-			// fmt.Println("9,1 ", err.Error())
 			// 执行命令错误时执行整个命令
 			if strings.Contains(err.Error(), "exit") {
-				// fmt.Println("12 ", in, result)
 				CMD := strings.Join(in, " ")
 				if !strings.Contains(CMD, "edit") && in[target] != "edit" {
+					slog.Debug("执行命令错误时执行整个命令", "ERROR", err.Error(), "CMD", CMD, "是否包含EDIT", false)
 					execCmd(CMD)
 				} else {
+					slog.Debug("执行命令错误时执行整个命令", "ERROR", err.Error(), "CMD", strings.Replace(CMD, "edit", "get", 1), "是否包含EDIT", false)
 					execCmd(strings.Replace(CMD, "edit", "get", 1))
 				}
 			} else {
 				return result, err
 			}
 		} else {
-			// fmt.Println("9.2", t_two)
 			// 补全 -n中提供的数据后缀
+			slog.Debug("执行默认命令数据收集命令[后续命令补全]", "cmd", cmd)
 			for _, v := range strings.Split(rs_string, "\n") {
 				if strings.TrimSpace(v) != "" {
 					result = append(result, v)
@@ -359,7 +389,7 @@ func execCmdString(in string) (string, error) {
 		// } else {
 		// 	log.Fatalf("cmd.Run() failed with %s err: %s\n", in, err)
 		// }
-
+		slog.Error(err.Error(), "CMD", in, "errout", errout.String())
 		return "", err
 	}
 	return out.String(), nil
@@ -379,7 +409,7 @@ func execCmd(in string) error {
 		// } else {
 		// 	log.Fatalf("cmd.Run() failed with %s err: %s\n", in, err)
 		// }
-
+		slog.Error(err.Error(), "CMD", in)
 		return err
 	}
 	return nil

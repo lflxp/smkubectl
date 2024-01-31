@@ -1,6 +1,6 @@
 module github.com/lflxp/smkubectl
 
-go 1.20
+go 1.21.6
 
 require (
 	github.com/junegunn/fzf v0.0.0-20240130022308-dd886d22f0b9

@@ -4,14 +4,17 @@ Copyright © 2024 lflxp <382023823@qq.com>
 package cmd
 
 import (
+	"log/slog"
+	"os"
+
 	fzf "github.com/junegunn/fzf/src"
 	"github.com/junegunn/fzf/src/protector"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 var version string = "0.46"
 var revision string = "devel"
+var lvl slog.LevelVar
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -34,20 +37,34 @@ to quickly create a Cobra application.`,
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	// 日志配置
+	lvl.Set(slog.LevelError)
+	opts := slog.HandlerOptions{
+		AddSource: true,
+		Level:     &lvl,
+	}
+
+	// slog.SetDefault(slog.New((slog.NewJSONHandler(os.Stdout, &opts))))
+	slog.SetDefault(slog.New((slog.NewTextHandler(os.Stdout, &opts))))
+
 	// 保证没有参数或者参数只有一个且为completion的时候执行cobra
 	// 其余都走parseCmd
+	slog.Info("Hello world")
 	if len(os.Args) >= 2 {
 		switch os.Args[1] {
 		case "completion", "smart":
+			slog.Debug("进入cobra命令模式", slog.Any("args", os.Args[1]))
 			err := rootCmd.Execute()
 			if err != nil {
 				os.Exit(1)
 			}
 		default:
+			slog.Debug("进入completion模式")
 			protector.Protect()
 			fzf.Run(fzf.ParseOptions(), version, revision)
 		}
 	} else {
+		slog.Debug("进入fzf模式")
 		protector.Protect()
 		fzf.Run(fzf.ParseOptions(), version, revision)
 	}
