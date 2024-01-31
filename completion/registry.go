@@ -19,4 +19,5 @@ var Completes map[string]Completion = map[string]Completion{
 	"kill":    kill,
 	"git":     git,
 	"go":      golang,
+	"showme":  showme,
 }
