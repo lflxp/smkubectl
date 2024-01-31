@@ -49,7 +49,6 @@ func Execute() {
 
 	// 保证没有参数或者参数只有一个且为completion的时候执行cobra
 	// 其余都走parseCmd
-	slog.Info("Hello world")
 	if len(os.Args) >= 2 {
 		switch os.Args[1] {
 		case "completion", "smart":
