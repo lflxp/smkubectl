@@ -235,6 +235,12 @@ var kubectl = Completion{
 			IsShell: true,
 			Shell:   "kubectl get ns",
 		},
+		"-o": Completion{
+			Level: "args",
+			Cmd: []string{
+				"ARGS (https://kubernetes.io/docs/reference/kubectl/#custom-columns)", "json", "yaml", "name", "go-template", "go-template-file", "template", "templatefile", "jsonpath", "jsonpath-as-json", "jsonpath-file", "custom-columns", "custom-columns-file", "wide",
+			},
+		},
 		"-l": Completion{
 			Level:   "show labels",
 			IsShell: true,
