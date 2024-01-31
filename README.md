@@ -34,9 +34,18 @@ go install github.com/lflxp/smkubectl@latest
 
 2. zsh开启自动补全
 
-```
+*zsh*
+
+```zsh
 autoload -U compinit && compinit -u
 source <(smkubectl completion zsh)
+```
+
+*bash*
+
+```bash
+autoload -U compinit && compinit -u
+source <(smkubectl completion bash)
 ```
 
 3. 建立kubectl软连接（可选）
@@ -64,8 +73,21 @@ ln -s `which kubectl` /usr/local/bin/k
 
 ## DEBUG模式
 
+### 开启DEBUG日志
+
 ```zsh
 source <(smkubectl completon zsh -d)
+```
+or
+```bash
+source <(smkubectl completon bash -d)
+```
+
+### 设置completion日志输入环境变量
+
+```bash
+export BASH_COMP_DEBUG_FILE=/tmp/1
+tail -f $BASH_COMP_DEBUG_FILE
 ```
 
 # 支持的命令
