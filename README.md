@@ -97,6 +97,7 @@ tail -f $BASH_COMP_DEBUG_FILE
 * [x] git
 * [ ] ssh
 * [x] go
+* [x] showme
 
 # TODO
 

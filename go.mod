@@ -5,6 +5,8 @@ go 1.21.6
 require (
 	github.com/junegunn/fzf v0.0.0-20240130022308-dd886d22f0b9
 	github.com/spf13/cobra v1.8.0
+	gopkg.in/yaml.v3 v3.0.1
+	k8s.io/client-go v0.29.1
 )
 
 require (
@@ -21,5 +23,5 @@ require (
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/term v0.16.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 )
