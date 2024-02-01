@@ -194,7 +194,7 @@ func ParseCmd(in string) {
 									// 优点：实时匹配
 									for _, c := range strings.Split(resources, " ") {
 										if c != " " && !strings.Contains(c, "v1") && !strings.Contains(c, "v2") {
-											resourceList = append(resourceList, strings.TrimSpace(strings.ReplaceAll(c, "\n", "go ")))
+											resourceList = append(resourceList, strings.TrimSpace(strings.ReplaceAll(c, "\n", " ")))
 											if strings.HasPrefix(c, result[len(result)-1]) {
 												cmd = fmt.Sprintf("kubectl get %s -A", result[len(result)-1])
 												isCmds = true
