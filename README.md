@@ -1,79 +1,90 @@
-# 介绍
+#Introduction
 
-![](asset/pod.png)
+![](asset/pod. png)
 
-smkubectl = kubectl + fzf + zsh-completion 是一个用于在 Kubernetes 环境中执行命令的工具。Kubernetes 是一个用于管理容器化应用程序的操作系统，它运行在分布式集群上。kubectl 是用于与 Kubernetes 集群交互的命令行工具，而 fzf 是一个用于在文本文件中执行交互式搜索的工具，而 zsh-completion 是用于自动完成命令的补全工具。
+[简体中文](README.zh-CN.md)
 
-这个工具组合的设计是为了提高用户在 Kubernetes 环境中的命令执行效率。kubectl 提供了丰富的命令集，用于管理 Kubernetes 集群上的各种资源。但是，这些命令通常很长，在终端中一次输入所有命令可能会很麻烦。fzf 提供了交互式搜索功能，允许用户通过键盘快捷键或者模糊搜索来选择所需的命令。最后，zsh-completion 可以根据用户输入的命令前缀自动完成命令，减少用户输入的工作量。
+Smkubectl=kubectl+fzf+zsh completion is a tool used to execute commands in the Kubernetes environment. Kubernetes is an operating system used to manage containerized applications, running on distributed clusters. Kubectl is a command-line tool for interacting with Kubernetes clusters, fzf is a tool for performing interactive searches in text files, and zsh completion is a completion tool for automatically completing commands.
 
-# 特点
+The design of this tool combination is to improve the command execution efficiency of users in the Kubernetes environment. Kubectl provides a rich command set for managing various resources on the Kubernetes cluster. However, these commands are often lengthy, and entering all commands at once in the terminal can be cumbersome. Fzf provides interactive search functionality, allowing users to select the desired command through keyboard shortcuts or fuzzy search. Finally, zsh completion can automatically complete commands based on the prefix entered by the user, reducing the workload of user input.
 
-* 支持 kubectl | go | git | kill 等命令的自动补全
-* 无其它任何依赖，一个文件`smkubectl`搞定所有事情
-* 无复杂繁琐的fzf配置，无需安装fzf命令
-* 自动生成zsh-completion配置，只需简单配置即可，无需复杂zsh|zsh-completion配置
-* 开箱即用，效率提升，简单易用
 
-# 依赖
+# Characteristics
 
-要使用这个工具组合，你需要安装并配置 kubectl、fzf 和 zsh。以下是安装和配置的步骤：
+* Supports automatic completion of commands such as kubectl, go, git, and kill
+* No other dependencies, one file 'smkubectl' takes care of everything
+* No complex and tedious fzf configuration, no need to install fzf commands
+* Automatically generate zsh completion configuration, simple configuration is sufficient, no need for complex zsh | zsh completion configuration
+* Ready to use out of the box, improved efficiency, simple and easy to use
 
-* 安装 kubectl
-* 无需安装 fzf [buildin]
-* 安装 zsh
+# Dependency
 
-通过使用 kubectl + fzf + zsh-completion 工具组合，你可以提高在 Kubernetes 环境中执行命令的效率，使你的工作更轻松。
+To use this tool combination, you need to install and configure kubectl, fzf, and zsh. The following are the steps for installation and configuration:
 
-# 安装
 
-1. install
+* Install kubectl
+* No need to install fzf [buildin]
+* Install zsh
 
-```
-go install github.com/lflxp/smkubectl@latest
-```
 
-2. zsh开启自动补全
+By using a combination of kubectl, fzf, and zsh completion tools, you can improve the efficiency of executing commands in the Kubernetes environment, making your work easier.
 
-*zsh*
+# Installation
 
-```zsh
-autoload -U compinit && compinit -u
-source <(smkubectl completion zsh)
-```
-
-*bash*
-
-```bash
-autoload -U compinit && compinit -u
-source <(smkubectl completion bash)
-```
-
-3. 建立kubectl软连接（可选）
+1. Install
 
 ```
-ln -s `which kubectl` /usr/local/bin/k
+
+go install github. com/lflxp/ smkubectl@latest
+
 ```
 
-# 使用
+2. zsh enables automatic completion
 
-## 快捷键
+*Zsh*
+
+```Zsh
+
+autoload - U compinit&&compinit - u
+
+source<(smkubectl completion zsh)
+
+```
+
+*Bash*
+
+```Bash
+autoload - U compinit && compinit - u
+
+source<(smkubectl completion bash)
+```
+
+3. Establish a Kubectl soft connection (optional)
+
+```
+ln - s ` which kubectl `/usr/local/bin/k
+```
+
+# Using
+
+## Shortcut keys
 
 > ~
 
-## 操作
+## Operation
 
-* k + ~
-* k g + ~
-* k get + ~
-* k get po+~ (没有空格)
-* k get po + ~ (有空格)
-* k edit po -n
-* k get po -n namespace pod -c + ~
-* k logs -f + ~
+* k+~
+* k g+~
+* k get+~
+* k get po+~(no spaces)
+* k get po+~(with spaces)
+* k edit po - n
+* k get po - n namespace pod - c+~
+* k logs - f+~
 
-## DEBUG模式
+## DEBUG mode
 
-### 开启DEBUG日志
+### Enable DEBUG logs
 
 ```zsh
 source <(smkubectl completon zsh -d)
@@ -83,22 +94,22 @@ or
 source <(smkubectl completon bash -d)
 ```
 
-### 设置completion日志输入环境变量
+### Set completion log input environment variables 
 
 ```bash
 export BASH_COMP_DEBUG_FILE=/tmp/1
 tail -f $BASH_COMP_DEBUG_FILE
 ```
 
-# 支持的命令
+#Supported commands
 
-* [x] kubectl && k
-* [x] kill
-* [x] git
-* [ ] ssh
-* [x] go
-* [x] showme
+*[x] kubectl&&k
+*[x] kill
+*[x] Git
+*[] ssh
+*[x] go
+*[x] showme
 
-# TODO
+#TODO
 
-* [ ] 支持日志DEBUG功能
+*[] Support log DEBUG function
