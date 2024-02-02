@@ -102,15 +102,15 @@ export BASH_COMP_DEBUG_FILE=/tmp/1
 tail -f $BASH_COMP_DEBUG_FILE
 ```
 
-#Supported commands
+# Supported commands
 
-*[x] kubectl&&k
-*[x] kill
-*[x] Git
-*[] ssh
-*[x] go
-*[x] showme
+- [x] kubectl&&k
+- [x] kill
+- [x] Git
+- [ ] ssh
+- [x] go
+- [x] showme
 
-#TODO
+# TODO
 
-*[] Support log DEBUG function
+- [ ] Support log DEBUG function
