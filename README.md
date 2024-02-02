@@ -1,6 +1,6 @@
 #Introduction
 
-![](asset/pod. png)
+![](asset/pod.png)
 
 [简体中文](README.zh-CN.md)
 
