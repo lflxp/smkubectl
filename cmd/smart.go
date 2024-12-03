@@ -4,9 +4,9 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"log/slog"
 	"strings"
 
+	"github.com/lflxp/smkubectl/completion/kubectl"
 	"github.com/spf13/cobra"
 )
 
@@ -27,11 +27,17 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// 动态调整日志输出级别
-		if debugLevel {
-			lvl.Set(slog.LevelDebug)
+		// if debugLevel {
+		// 	lvl.Set(slog.LevelDebug)
+		// }
+		// slog.Debug("smart cmd", slog.Any("args", args))
+		// ParseCmd(strings.Join(args, " "))
+
+		cd := &kubectl.Command{
+			Raw: strings.Join(args, " "),
 		}
-		slog.Debug("smart cmd", slog.Any("args", args))
-		ParseCmd(strings.Join(args, " "))
+
+		kubectl.Start(cd)
 	},
 }
 
