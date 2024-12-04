@@ -53,7 +53,7 @@ var KCommand = map[string]*TreeNode{
 	"logs": &TreeNode{
 		IsShell:  true,
 		Shell:    "kubectl get po -A",
-		Children: KArgs(),
+		Children: KArgs(0),
 	},
 	"-n": &TreeNode{
 		IsShell: true,

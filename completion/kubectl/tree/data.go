@@ -183,7 +183,7 @@ func KKind() map[string]*TreeNode {
 			KArgValues[k] = &TreeNode{
 				IsShell:  true,
 				Shell:    "kubectl get " + v + " -A",
-				Children: KArgs(),
+				Children: KArgs(0),
 			}
 		}
 	}
@@ -196,17 +196,23 @@ var KArgsValues = map[string]string{
 	"-n": "ns",
 	"-A": "ns -A",
 	"-f": "po -A",
+	"-c": "", // 获取原始命令 去除-c 然后获取name => k get po -n b01xm1 workspace5edc5287bd2c4f7f-647bc75db6-sxhj8 -oyaml|grep name|grep -vE 'field|-|path'
 }
 
 var KAArgsValues map[string]*TreeNode
 
-func KArgs() map[string]*TreeNode {
+func KArgs(level int) map[string]*TreeNode {
+	if level == 4 {
+		return nil
+	}
+	level++
 	if KAArgsValues == nil {
 		KAArgsValues = make(map[string]*TreeNode)
 		for k, v := range KArgsValues {
 			KAArgsValues[k] = &TreeNode{
-				IsShell: true,
-				Shell:   "kubectl get " + v,
+				IsShell:  true,
+				Shell:    "kubectl get " + v,
+				Children: KArgs(level),
 			}
 		}
 	}
