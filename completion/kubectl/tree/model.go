@@ -16,6 +16,8 @@ type TreeNode struct {
 	IsShell  bool     // 是否执行kubectl获取还是直接cmd提示
 	Shell    string   // 获取提示的命令
 	Cmds     []string // 命令
+	IsHeader bool
+	Header   string
 	Children map[string]*TreeNode
 }
 
