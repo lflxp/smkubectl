@@ -96,4 +96,15 @@ func Test_Search(t *testing.T) {
 		assert.Equal(t, len(rs), 1)
 		assert.Equal(t, rs["-n"].IsShell, true)
 	})
+
+	// TODO
+	t.Run("k logs -f -n eclipse-che pods -c", func(t *testing.T) {
+		rs := Search(&Kubernetes, []string{"k", "logs", "-f", "-n"}, true)
+		if rs == nil {
+			t.Fatal("rs is nil")
+		}
+
+		assert.Equal(t, len(rs), 1)
+		assert.Equal(t, rs["-n"].IsShell, true)
+	})
 }
