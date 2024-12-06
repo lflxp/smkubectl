@@ -1,4 +1,4 @@
-package tree
+package completion
 
 import (
 	"log/slog"

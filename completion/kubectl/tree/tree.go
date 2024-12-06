@@ -1,16 +1,20 @@
 package tree
 
-var Kubernetes = TreeNode{
+import (
+	c "github.com/lflxp/smkubectl/completion"
+)
+
+var Kubernetes = c.TreeNode{
 	Value:  "k",
-	Kind:   KindCommand,
+	Kind:   c.KindCommand,
 	Common: "Kubernetes 命令行工具",
-	Children: map[string]*TreeNode{
-		"k": &TreeNode{
+	Children: map[string]*c.TreeNode{
+		"k": {
 			IsShell:  true,
 			Shell:    "kubectl",
 			Children: KCommand,
 		},
-		"kubectl": &TreeNode{
+		"kubectl": {
 			IsShell:  true,
 			Shell:    "kubectl",
 			Children: KCommand,
@@ -18,54 +22,61 @@ var Kubernetes = TreeNode{
 	},
 }
 
-var KCommand = map[string]*TreeNode{
-	"get": &TreeNode{
+var KCommand = map[string]*c.TreeNode{
+	"get": {
 		IsShell:  true,
 		Shell:    "kubectl api-resources",
 		Children: KKind(),
 	},
-	"edit": &TreeNode{
+	"edit": {
 		IsShell:  true,
 		Shell:    "kubectl api-resources",
 		Children: KKind(),
 	},
-	"patch": &TreeNode{
+	"patch": {
 		IsShell:  true,
 		Shell:    "kubectl api-resources",
 		Children: KKind(),
 	},
-	"delete": &TreeNode{
+	"delete": {
 		IsShell:  true,
 		Shell:    "kubectl api-resources",
 		Children: KKind(),
 	},
-	"label": &TreeNode{
+	"label": {
 		IsShell:  true,
 		Shell:    "kubectl api-resources",
 		Children: KKind(),
 	},
-	"api-resources": &TreeNode{
-		IsShell: false,
+	"explain": {
+		IsShell:  true,
+		Shell:    "kubectl api-resources",
+		Children: KArgs(0),
 	},
-	"api-versions": &TreeNode{
-		IsShell: false,
+	"api-resources": {
+		IsShell: true,
+		Shell:   "kubectl api-resources",
 	},
-	"logs": &TreeNode{
+	"api-versions": {
+		IsShell: true,
+		Shell:   "kubectl api-versions",
+	},
+	"logs": {
 		IsShell:  true,
 		Shell:    "kubectl get po -A",
 		Children: KArgs(0),
 	},
-	"describe": &TreeNode{
+	"describe": {
 		IsShell:  true,
 		Shell:    "kubectl api-resources",
 		Children: KKind(),
 	},
-	"exec": &TreeNode{
+	"exec": {
 		IsShell:  true,
 		Shell:    "kubectl get po -A",
 		Children: KArgs(0),
 	},
-	"-n": &TreeNode{
+	"-n": {
 		IsShell: true,
 		Shell:   "kubectl get ns",
 	},

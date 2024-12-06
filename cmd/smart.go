@@ -4,8 +4,12 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
+	"log/slog"
 	"strings"
 
+	c "github.com/lflxp/smkubectl/completion"
+	g "github.com/lflxp/smkubectl/completion/git"
 	"github.com/lflxp/smkubectl/completion/kubectl"
 	"github.com/spf13/cobra"
 )
@@ -33,11 +37,20 @@ to quickly create a Cobra application.`,
 		// slog.Debug("smart cmd", slog.Any("args", args))
 		// ParseCmd(strings.Join(args, " "))
 
-		cd := &kubectl.Command{
+		cd := &c.Command{
 			Raw: strings.Join(args, " "),
 		}
 
-		kubectl.Start(cd)
+		tmp := strings.Split(args[0], " ")
+		switch tmp[0] {
+		case "k", "kubectl":
+			kubectl.Start(cd)
+		case "g", "git":
+			g.Start(cd)
+		default:
+			fmt.Println("ERROR")
+			slog.Error("命令不存在", "CMD", args[0])
+		}
 	},
 }
 

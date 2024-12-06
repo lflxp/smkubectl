@@ -1,4 +1,4 @@
-package kubectl
+package git
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"log/slog"
 
 	c "github.com/lflxp/smkubectl/completion"
-	"github.com/lflxp/smkubectl/completion/kubectl/tree"
+	"github.com/lflxp/smkubectl/completion/git/tree"
 	"github.com/lflxp/smkubectl/utils"
 )
 
@@ -27,7 +27,7 @@ func (m *Process) Execute(command *c.Command) {
 	}
 
 	// 搜索命令
-	result := c.Search(&tree.Kubernetes, command.Cmds, command.IsLastWorkSpace)
+	result := c.Search(&tree.Gits, command.Cmds, command.IsLastWorkSpace)
 	if result == nil {
 		// 如果长度大于3个则直接执行命令
 		// k get po -n kube-system
@@ -57,56 +57,33 @@ func (m *Process) Execute(command *c.Command) {
 	} else if len(result) == 1 {
 		for _, v := range result {
 			if v.IsShell {
-				// 如果最后的命令是-c则执行
-				if command.Cmds[len(command.Cmds)-1] == "-c" {
-					var cmd string
-					cmd = strings.ReplaceAll(CC, "$HERE", strings.Join(command.Cmds[:len(command.Cmds)-1], " "))
-					switch command.Cmds[1] {
-					case "logs":
-						if command.Cmds[len(command.Cmds)-1] == "-c" {
-							// 判断-n后面是否有命名空间
-							cmd = command.Raw
-							for index, v := range command.Cmds {
-								if v == "-n" {
-									if len(command.Cmds) >= index+2 {
-										ns := command.Cmds[index+1]
-										pod := command.Cmds[index+2]
-										cmd = fmt.Sprintf("kubectl get po -n %s %s", ns, pod)
-										cmd = strings.ReplaceAll(CC, "$HERE", cmd)
-									}
-								}
-							}
-						}
-					case "exec":
-						if command.Cmds[len(command.Cmds)-1] == "-c" {
-							// 判断-n后面是否有命名空间
-							cmd = command.Raw
-							for index, v := range command.Cmds {
-								if v == "-n" {
-									if len(command.Cmds) >= index+2 {
-										ns := command.Cmds[index+1]
-										pod := command.Cmds[index+2]
-										cmd = fmt.Sprintf("kubectl get po -n %s %s", ns, pod)
-										cmd = strings.ReplaceAll(CC, "$HERE", cmd)
-									}
-								}
-							}
-						}
+				cmd := v.Shell
+				switch command.Cmds[1] {
+				case "branch":
+					if command.Cmds[len(command.Cmds)-1] == "-d" {
+						cmd = "git branch"
 					}
-
-					command.Result, err = utils.ExecCmdString(cmd)
-					command.Result = fmt.Sprintf("执行命令: %s\n%s\n", cmd, command.Result)
-				} else {
-					command.Result, err = utils.ExecCmdString(v.Shell)
 				}
-
+				fmt.Println("执行命令", cmd)
+				err = utils.ExecCmd(cmd)
 				if err != nil {
 					command.Result = fmt.Sprintf("Error\n%s\n", err.Error())
 					continue
 				}
 			} else {
-				// fmt.Printf("%s\n", k)
-				fmt.Println(v)
+				// 处理多命令打印
+				count := 0
+				// fmt.Println(v)
+				for k, _ := range v.Children {
+					if count == 0 {
+						command.Result += "Name\n"
+						count++
+					}
+					// fmt.Printf("%s\n", k)
+					// 计算剩余命令
+					last := strings.Replace(k, command.Cmds[len(command.Cmds)-1], "", 1)
+					command.Result += fmt.Sprintf("%s\n", last)
+				}
 			}
 		}
 	}

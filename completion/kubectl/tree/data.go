@@ -1,5 +1,9 @@
 package tree
 
+import (
+	c "github.com/lflxp/smkubectl/completion"
+)
+
 // k get po 第三极数据
 // k get -n
 var KKindValues = map[string]string{
@@ -175,13 +179,13 @@ var KKindValues = map[string]string{
 	"-n":                              "ns",
 }
 
-var KArgValues map[string]*TreeNode
+var KArgValues map[string]*c.TreeNode
 
-func KKind() map[string]*TreeNode {
+func KKind() map[string]*c.TreeNode {
 	if KArgValues == nil {
-		KArgValues = make(map[string]*TreeNode)
+		KArgValues = make(map[string]*c.TreeNode)
 		for k, v := range KKindValues {
-			KArgValues[k] = &TreeNode{
+			KArgValues[k] = &c.TreeNode{
 				IsShell:  true,
 				Shell:    "kubectl get " + v + " -A",
 				Children: KArgs(0),
@@ -202,26 +206,26 @@ var KArgsValues = map[string]string{
 	"-o":  "yaml",
 }
 
-var KAArgsValues map[string]*TreeNode
+var KAArgsValues map[string]*c.TreeNode
 
-func KArgs(level int) map[string]*TreeNode {
+func KArgs(level int) map[string]*c.TreeNode {
 	if level == 4 {
 		return nil
 	}
 	level++
 	if KAArgsValues == nil {
-		KAArgsValues = make(map[string]*TreeNode)
+		KAArgsValues = make(map[string]*c.TreeNode)
 		for k, v := range KArgsValues {
 			if k == "-c" {
 				// 默认基于pod
-				KAArgsValues[k] = &TreeNode{
+				KAArgsValues[k] = &c.TreeNode{
 					IsShell:  true,
 					Shell:    v,
 					Children: KArgs(level),
 				}
 				continue
 			}
-			KAArgsValues[k] = &TreeNode{
+			KAArgsValues[k] = &c.TreeNode{
 				IsShell:  true,
 				Shell:    "kubectl get " + v,
 				Children: KArgs(level),

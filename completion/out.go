@@ -1,4 +1,4 @@
-package kubectl
+package completion
 
 import (
 	"fmt"
@@ -8,10 +8,10 @@ type Out struct {
 	next Cmd
 }
 
-func (r *Out) execute(command *Command) {
+func (r *Out) Execute(command *Command) {
 	fmt.Println(command.Result)
 }
 
-func (r *Out) setNext(next Cmd) {
+func (r *Out) SetNext(next Cmd) {
 	r.next = next
 }

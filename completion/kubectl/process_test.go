@@ -4,18 +4,19 @@ import (
 	"strings"
 	"testing"
 
+	c "github.com/lflxp/smkubectl/completion"
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_raw_execute(t *testing.T) {
+func Test_raw_Execute(t *testing.T) {
 	t.Run("", func(t *testing.T) {
-		cmd := &Command{
+		cmd := &c.Command{
 			Raw: "",
 		}
 
-		raw := Raw{}
+		raw := c.Raw{}
 
-		raw.execute(cmd)
+		raw.Execute(cmd)
 		assert.Equal(t, "", cmd.Raw)
 
 		assert.Equal(t, false, cmd.RawDone)
@@ -23,26 +24,26 @@ func Test_raw_execute(t *testing.T) {
 		assert.Equal(t, []string{}, cmd.Cmds)
 
 		process := Process{}
-		raw.setNext(&process)
+		raw.SetNext(&process)
 
-		out := Out{}
-		process.setNext(&out)
+		out := c.Out{}
+		process.SetNext(&out)
 
-		out.execute(cmd)
+		out.Execute(cmd)
 	})
 
 	t.Run("k", func(t *testing.T) {
-		cmd := &Command{
+		cmd := &c.Command{
 			Raw: "k",
 		}
 
 		process := Process{}
-		raw := Raw{}
-		raw.setNext(&process)
-		out := Out{}
-		process.setNext(&out)
+		raw := c.Raw{}
+		raw.SetNext(&process)
+		out := c.Out{}
+		process.SetNext(&out)
 
-		raw.execute(cmd)
+		raw.Execute(cmd)
 
 		assert.Equal(t, "k", cmd.Raw)
 		assert.Equal(t, true, cmd.RawDone)
@@ -51,17 +52,17 @@ func Test_raw_execute(t *testing.T) {
 	})
 
 	t.Run("k ", func(t *testing.T) {
-		cmd := &Command{
+		cmd := &c.Command{
 			Raw: "k ",
 		}
 
 		process := Process{}
-		raw := Raw{}
-		raw.setNext(&process)
-		out := Out{}
-		process.setNext(&out)
+		raw := c.Raw{}
+		raw.SetNext(&process)
+		out := c.Out{}
+		process.SetNext(&out)
 
-		raw.execute(cmd)
+		raw.Execute(cmd)
 		assert.Equal(t, "k ", cmd.Raw)
 
 		assert.Equal(t, true, cmd.RawDone)
@@ -70,17 +71,17 @@ func Test_raw_execute(t *testing.T) {
 	})
 
 	t.Run("k get -n ", func(t *testing.T) {
-		cmd := &Command{
+		cmd := &c.Command{
 			Raw: "k get -n ",
 		}
 
 		process := Process{}
-		raw := Raw{}
-		raw.setNext(&process)
-		out := Out{}
-		process.setNext(&out)
+		raw := c.Raw{}
+		raw.SetNext(&process)
+		out := c.Out{}
+		process.SetNext(&out)
 
-		raw.execute(cmd)
+		raw.Execute(cmd)
 		assert.Equal(t, "k get -n ", cmd.Raw)
 
 		assert.Equal(t, true, cmd.RawDone)
@@ -89,17 +90,17 @@ func Test_raw_execute(t *testing.T) {
 	})
 
 	t.Run("k get po -", func(t *testing.T) {
-		cmd := &Command{
+		cmd := &c.Command{
 			Raw: "k get po -",
 		}
 
 		process := Process{}
-		raw := Raw{}
-		raw.setNext(&process)
-		out := Out{}
-		process.setNext(&out)
+		raw := c.Raw{}
+		raw.SetNext(&process)
+		out := c.Out{}
+		process.SetNext(&out)
 
-		raw.execute(cmd)
+		raw.Execute(cmd)
 		assert.Equal(t, "k get po -", cmd.Raw)
 
 		assert.Equal(t, true, cmd.RawDone)
@@ -109,17 +110,17 @@ func Test_raw_execute(t *testing.T) {
 	})
 
 	t.Run("k get po", func(t *testing.T) {
-		cmd := &Command{
+		cmd := &c.Command{
 			Raw: "k get po",
 		}
 
 		process := Process{}
-		raw := Raw{}
-		raw.setNext(&process)
-		out := Out{}
-		process.setNext(&out)
+		raw := c.Raw{}
+		raw.SetNext(&process)
+		out := c.Out{}
+		process.SetNext(&out)
 
-		raw.execute(cmd)
+		raw.Execute(cmd)
 		assert.Equal(t, "k get po", cmd.Raw)
 
 		assert.Equal(t, true, cmd.RawDone)
@@ -129,17 +130,17 @@ func Test_raw_execute(t *testing.T) {
 	})
 
 	t.Run("k get po ", func(t *testing.T) {
-		cmd := &Command{
+		cmd := &c.Command{
 			Raw: "k get po ",
 		}
 
 		process := Process{}
-		raw := Raw{}
-		raw.setNext(&process)
-		out := Out{}
-		process.setNext(&out)
+		raw := c.Raw{}
+		raw.SetNext(&process)
+		out := c.Out{}
+		process.SetNext(&out)
 
-		raw.execute(cmd)
+		raw.Execute(cmd)
 		assert.Equal(t, "k get po ", cmd.Raw)
 
 		assert.Equal(t, true, cmd.RawDone)
@@ -149,17 +150,17 @@ func Test_raw_execute(t *testing.T) {
 	})
 
 	t.Run("k d", func(t *testing.T) {
-		cmd := &Command{
+		cmd := &c.Command{
 			Raw: "k d",
 		}
 
 		process := Process{}
-		raw := Raw{}
-		raw.setNext(&process)
-		out := Out{}
-		process.setNext(&out)
+		raw := c.Raw{}
+		raw.SetNext(&process)
+		out := c.Out{}
+		process.SetNext(&out)
 
-		raw.execute(cmd)
+		raw.Execute(cmd)
 		assert.Equal(t, "k d", cmd.Raw)
 
 		assert.Equal(t, true, cmd.RawDone)
@@ -177,17 +178,17 @@ func Test_raw_execute(t *testing.T) {
 	// k logs -n argocd argocd-redis-master-0 -f --tail 100
 	// 不能带-f查看日志
 	t.Run("k logs -n argocd argocd-redis-master-0 --tail 100 ", func(t *testing.T) {
-		cmd := &Command{
+		cmd := &c.Command{
 			Raw: "k logs -n argocd argocd-redis-master-0 --tail 100 ",
 		}
 
 		process := Process{}
-		raw := Raw{}
-		raw.setNext(&process)
-		out := Out{}
-		process.setNext(&out)
+		raw := c.Raw{}
+		raw.SetNext(&process)
+		out := c.Out{}
+		process.SetNext(&out)
 
-		raw.execute(cmd)
+		raw.Execute(cmd)
 		assert.Equal(t, "k logs -n argocd argocd-redis-master-0 --tail 100 ", cmd.Raw)
 
 		assert.Equal(t, true, cmd.RawDone)
@@ -197,17 +198,17 @@ func Test_raw_execute(t *testing.T) {
 	})
 
 	t.Run("k edit ingress ", func(t *testing.T) {
-		cmd := &Command{
+		cmd := &c.Command{
 			Raw: "k edit ingress ",
 		}
 
 		process := Process{}
-		raw := Raw{}
-		raw.setNext(&process)
-		out := Out{}
-		process.setNext(&out)
+		raw := c.Raw{}
+		raw.SetNext(&process)
+		out := c.Out{}
+		process.SetNext(&out)
 
-		raw.execute(cmd)
+		raw.Execute(cmd)
 		assert.Equal(t, "k edit ingress ", cmd.Raw)
 
 		assert.Equal(t, true, cmd.RawDone)
@@ -217,17 +218,17 @@ func Test_raw_execute(t *testing.T) {
 	})
 
 	t.Run("k get po -n kube-system rke2-coredns-rke2-coredns-7c596479f9-464tt -c ", func(t *testing.T) {
-		cmd := &Command{
+		cmd := &c.Command{
 			Raw: "k get po -n kube-system rke2-coredns-rke2-coredns-7c596479f9-464tt -c ",
 		}
 
 		process := Process{}
-		raw := Raw{}
-		raw.setNext(&process)
-		out := Out{}
-		process.setNext(&out)
+		raw := c.Raw{}
+		raw.SetNext(&process)
+		out := c.Out{}
+		process.SetNext(&out)
 
-		raw.execute(cmd)
+		raw.Execute(cmd)
 		assert.Equal(t, "k get po -n kube-system rke2-coredns-rke2-coredns-7c596479f9-464tt -c ", cmd.Raw)
 
 		assert.Equal(t, true, cmd.RawDone)
@@ -238,17 +239,17 @@ func Test_raw_execute(t *testing.T) {
 
 	// k logs -f -n 1qaz workspacec1941ce79b9d4fde-6c6f4f9446-cv8nd -c
 	t.Run("k logs -f -n 1qaz workspacec1941ce79b9d4fde-6c6f4f9446-cv8nd -c ", func(t *testing.T) {
-		cmd := &Command{
+		cmd := &c.Command{
 			Raw: "k logs -f -n 1qaz workspacec1941ce79b9d4fde-6c6f4f9446-cv8nd -c ",
 		}
 
 		process := Process{}
-		raw := Raw{}
-		raw.setNext(&process)
-		out := Out{}
-		process.setNext(&out)
+		raw := c.Raw{}
+		raw.SetNext(&process)
+		out := c.Out{}
+		process.SetNext(&out)
 
-		raw.execute(cmd)
+		raw.Execute(cmd)
 		assert.Equal(t, "k logs -f -n 1qaz workspacec1941ce79b9d4fde-6c6f4f9446-cv8nd -c ", cmd.Raw)
 
 		assert.Equal(t, true, cmd.RawDone)
@@ -258,17 +259,17 @@ func Test_raw_execute(t *testing.T) {
 	})
 
 	t.Run("k exec -n b01 workspace128ebf5c93b246c0-76c57cb8f7-g7h9z -c ", func(t *testing.T) {
-		cmd := &Command{
+		cmd := &c.Command{
 			Raw: "k exec -n b01 workspace128ebf5c93b246c0-76c57cb8f7-g7h9z -c ",
 		}
 
 		process := Process{}
-		raw := Raw{}
-		raw.setNext(&process)
-		out := Out{}
-		process.setNext(&out)
+		raw := c.Raw{}
+		raw.SetNext(&process)
+		out := c.Out{}
+		process.SetNext(&out)
 
-		raw.execute(cmd)
+		raw.Execute(cmd)
 		assert.Equal(t, "k exec -n b01 workspace128ebf5c93b246c0-76c57cb8f7-g7h9z -c ", cmd.Raw)
 
 		assert.Equal(t, true, cmd.RawDone)

@@ -1,4 +1,4 @@
-package kubectl
+package utils
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"os/exec"
 )
 
-func execCmd(in string) error {
+func ExecCmd(in string) error {
 	cmd := exec.Command("sh", "-c", in)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout // 标准输出
@@ -27,7 +27,7 @@ func execCmd(in string) error {
 	return nil
 }
 
-func execCmdString(in string) (string, error) {
+func ExecCmdString(in string) (string, error) {
 	cmd := exec.Command("sh", "-c", in)
 	cmd.Stdin = os.Stdin
 	var out bytes.Buffer

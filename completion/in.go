@@ -1,4 +1,4 @@
-package kubectl
+package completion
 
 import (
 	"fmt"
@@ -10,9 +10,9 @@ type Raw struct {
 	next Cmd
 }
 
-func (r *Raw) execute(command *Command) {
+func (r *Raw) Execute(command *Command) {
 	if command.RawDone {
-		r.next.execute(command)
+		r.next.Execute(command)
 		return
 	}
 
@@ -34,7 +34,7 @@ func (r *Raw) execute(command *Command) {
 
 }
 
-func (r *Raw) setNext(next Cmd) {
+func (r *Raw) SetNext(next Cmd) {
 	r.next = next
 }
 
@@ -51,6 +51,6 @@ func (r *Raw) show(command *Command) {
 	// 判断是走到method方法还是提示
 	if r.next != nil {
 		slog.Debug("In 命令解析完成,进入下一步")
-		r.next.execute(command)
+		r.next.Execute(command)
 	}
 }

@@ -1,4 +1,9 @@
-package kubectl
+package completion
+
+type Cmd interface {
+	Execute(*Command)
+	SetNext(Cmd)
+}
 
 type Command struct {
 	IsLastWorkSpace bool     // 记录命令最后一个字符是否是空格

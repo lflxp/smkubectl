@@ -116,5 +116,5 @@ tail -f $BASH_COMP_DEBUG_FILE
 - [ ] 完成smkubectl新旧架构 
 - [ ] 新增git命令支持
 - [ ] 新增go
-- [ ] 新增kill
+- [ ] 新增kill -1-9
 - [ ] 新增showme
