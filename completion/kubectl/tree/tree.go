@@ -57,8 +57,13 @@ var KCommand = map[string]*TreeNode{
 	},
 	"describe": &TreeNode{
 		IsShell:  true,
-		Shell:    "kubectl get po -A",
+		Shell:    "kubectl api-resources",
 		Children: KKind(),
+	},
+	"exec": &TreeNode{
+		IsShell:  true,
+		Shell:    "kubectl get po -A",
+		Children: KArgs(0),
 	},
 	"-n": &TreeNode{
 		IsShell: true,

@@ -95,6 +95,7 @@ var KKindValues = map[string]string{
 	"thanosrulers":                    "thanosrulers",
 	"ingressclasses":                  "ingressclasses",
 	"ingresses":                       "ingresses",
+	"ingress":                         "ingress",
 	"runtimeclasses":                  "runtimeclasses",
 	"checlusters":                     "checlusters",
 	"poddisruptionbudgets":            "poddisruptionbudgets",
@@ -193,10 +194,12 @@ func KKind() map[string]*TreeNode {
 // k get -n
 // k get po -n
 var KArgsValues = map[string]string{
-	"-n": "ns",
-	"-A": "ns -A",
-	"-f": "po -A",
-	"-c": "", // 获取原始命令 去除-c 然后获取name => k get po -n b01xm1 workspace5edc5287bd2c4f7f-647bc75db6-sxhj8 -oyaml|grep name|grep -vE 'field|-|path'
+	"-n":  "ns",
+	"-A":  "ns -A",
+	"-f":  "po -A",
+	"-c":  `-o=jsonpath='{range .spec.containers[*]}{.name}{"\n"}{end}'`, // 获取原始命令 去除-c 然后获取name => k get po -n b01xm1 workspace5edc5287bd2c4f7f-647bc75db6-sxhj8 -oyaml|grep name|grep -vE 'field|-|path'
+	"-it": "po -A",
+	"-o":  "yaml",
 }
 
 var KAArgsValues map[string]*TreeNode
@@ -209,6 +212,15 @@ func KArgs(level int) map[string]*TreeNode {
 	if KAArgsValues == nil {
 		KAArgsValues = make(map[string]*TreeNode)
 		for k, v := range KArgsValues {
+			if k == "-c" {
+				// 默认基于pod
+				KAArgsValues[k] = &TreeNode{
+					IsShell:  true,
+					Shell:    v,
+					Children: KArgs(level),
+				}
+				continue
+			}
 			KAArgsValues[k] = &TreeNode{
 				IsShell:  true,
 				Shell:    "kubectl get " + v,

@@ -113,4 +113,8 @@ tail -f $BASH_COMP_DEBUG_FILE
 
 # TODO
 
-- [ ] Support log DEBUG function
+- [ ] 完成smkubectl新旧架构 
+- [ ] 新增git命令支持
+- [ ] 新增go
+- [ ] 新增kill
+- [ ] 新增showme

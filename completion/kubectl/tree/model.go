@@ -1,6 +1,9 @@
 package tree
 
-import "strings"
+import (
+	"log/slog"
+	"strings"
+)
 
 type Kind string
 
@@ -66,7 +69,14 @@ func Search(tree *TreeNode, data []string, isLastSpace bool) map[string]*TreeNod
 
 	// 递归查询
 	if node, ok := tree.Children[data[0]]; ok {
+		// 处理 -n kube-system这样命名空间不是命令组成的问题
+		// 统一处理 查不到的命令 后面还有命令的则继续 否则返回nil
 		return Search(node, data[1:], isLastSpace)
+	} else {
+		slog.Debug("命令不存在", "data", data[0])
+		if len(data) > 1 {
+			return Search(tree, data[2:], isLastSpace)
+		}
 	}
 
 	return nil

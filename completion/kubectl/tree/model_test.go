@@ -107,4 +107,14 @@ func Test_Search(t *testing.T) {
 		assert.Equal(t, len(rs), 1)
 		assert.Equal(t, rs["-n"].IsShell, true)
 	})
+
+	t.Run("k d", func(t *testing.T) {
+		rs := Search(&Kubernetes, []string{"k", "d"}, false)
+		if rs == nil {
+			t.Fatal("rs is nil")
+		}
+
+		assert.Equal(t, len(rs), 2)
+		assert.Equal(t, rs["delete"].IsShell, true)
+	})
 }
