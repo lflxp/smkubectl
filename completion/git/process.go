@@ -58,10 +58,14 @@ func (m *Process) Execute(command *c.Command) {
 		for _, v := range result {
 			if v.IsShell {
 				cmd := v.Shell
-				switch command.Cmds[1] {
-				case "branch":
-					if command.Cmds[len(command.Cmds)-1] == "-d" {
-						cmd = "git branch"
+				if len(command.Cmds) <= 1 {
+					cmd = command.Raw
+				} else {
+					switch command.Cmds[1] {
+					case "branch":
+						if command.Cmds[len(command.Cmds)-1] == "-d" {
+							cmd = "git branch"
+						}
 					}
 				}
 				fmt.Println("执行命令", cmd)

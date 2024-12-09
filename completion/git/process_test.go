@@ -104,4 +104,22 @@ func Test_raw_Execute(t *testing.T) {
 		assert.Equal(t, true, cmd.RawDone)
 		assert.Equal(t, false, cmd.IsLastWorkSpace)
 	})
+
+	t.Run("git ", func(t *testing.T) {
+		cmd := &c.Command{
+			Raw: "git ",
+		}
+
+		process := Process{}
+		raw := c.Raw{}
+		raw.SetNext(&process)
+		out := c.Out{}
+		process.SetNext(&out)
+
+		raw.Execute(cmd)
+
+		assert.Equal(t, "git ", cmd.Raw)
+		assert.Equal(t, true, cmd.RawDone)
+		assert.Equal(t, true, cmd.IsLastWorkSpace)
+	})
 }
