@@ -28,6 +28,11 @@ var KCommand = map[string]*c.TreeNode{
 		Shell:    "kubectl api-resources",
 		Children: KKind(),
 	},
+	"scale": {
+		IsShell:  true,
+		Shell:    "kubectl api-resources",
+		Children: KKind(),
+	},
 	"edit": {
 		IsShell:  true,
 		Shell:    "kubectl api-resources",
