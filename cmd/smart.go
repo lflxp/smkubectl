@@ -9,6 +9,7 @@ import (
 	c "github.com/lflxp/smkubectl/completion"
 	"github.com/lflxp/smkubectl/completion/docker"
 	"github.com/lflxp/smkubectl/completion/git"
+	"github.com/lflxp/smkubectl/completion/kill"
 	"github.com/lflxp/smkubectl/completion/kubectl"
 	"github.com/spf13/cobra"
 )
@@ -41,6 +42,8 @@ to quickly create a Cobra application.`,
 			git.Start(cd)
 		case "docker", "d":
 			docker.Start(cd)
+		case "kill":
+			kill.Start(cd)
 		}
 	},
 }
